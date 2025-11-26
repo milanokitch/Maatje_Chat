@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maatje AI – Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>Maatje AI – Chatbot</h1>
+        <p>Jouw digitale hulplijn</p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Left Section: Information -->
+        <section class="info-section">
+            <h2>Welkom bij Maatje AI</h2>
+            <p>Ons chatbot-platform biedt 24/7 ondersteuning met:</p>
+            <ul>
+                <li>✓ Snelle en vriendelijke antwoorden</li>
+                <li>✓ Veilige en vertrouwelijke communicatie</li>
+                <li>✓ Altijd beschikbaar voor jou</li>
+                <li>✓ Personaliseerde ondersteuning</li>
+            </ul>
+            <p class="info-text">Stuur een bericht in het chatvenster en ontvang direct antwoord. Onze AI-assistent is hier om je te helpen!</p>
+        </section>
+
+        <!-- Right Section: Chat Window -->
+        <section class="chat-section">
+            <div class="chat-window" id="chatWindow">
+                <div class="message bot-message">
+                    <div class="message-content">Hallo! 👋 Ik ben Maatje AI. Hoe kan ik je vandaag helpen?</div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    class="chat-input" 
+                    placeholder="Typ je bericht hier..."
+                    autocomplete="off"
+                >
+                <button id="sendBtn" class="send-btn">Verstuur</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
