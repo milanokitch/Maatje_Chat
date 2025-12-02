@@ -140,9 +140,9 @@ function removeTypingIndicator() {
  */
 const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
-    : ''; // Gebruik relative path voor Vercel/productie
+    : 'https://maatjechat.vercel.app'; // Gebruik de volledige URL voor Vercel
 
-console.log('🔗 API URL:', API_URL || '(relative path)');
+console.log('🔗 API URL:', API_URL);
 console.log('🌐 Hostname:', window.location.hostname);
 
 /**
