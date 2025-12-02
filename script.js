@@ -75,8 +75,12 @@ function addMessageToChat(messageText, messageClass, isHTML = false) {
 function sendMessage() {
     const message = messageInput.value.trim();
 
-    if (!message) return;
+    if (!message) {
+        console.log('⚠️ Leeg bericht, niet verzonden');
+        return;
+    }
 
+    console.log('📝 Gebruiker typt:', message);
     displayUserMessage(message);
     messageInput.value = '';
     messageInput.focus();
@@ -138,6 +142,9 @@ const API_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:3000' 
     : ''; // Gebruik relative path voor Vercel/productie
 
+console.log('🔗 API URL:', API_URL || '(relative path)');
+console.log('🌐 Hostname:', window.location.hostname);
+
 /**
  * Stuur bericht naar OpenAI via backend
  */
@@ -146,25 +153,43 @@ async function sendMessageToBot(message) {
         sendBtn.disabled = true;
         displayTypingIndicator();
         
+        const userId = getUserId();
+        const requestBody = { message, userId };
+        
+        console.log('📤 Verzenden naar API...');
+        console.log('   URL:', `${API_URL}/api/chat`);
+        console.log('   Message:', message);
+        console.log('   User ID:', userId);
+        
         const response = await fetch(`${API_URL}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                message,
-                userId: getUserId()
-            })
+            body: JSON.stringify(requestBody)
         });
 
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        console.log('📥 Response ontvangen');
+        console.log('   Status:', response.status);
+        console.log('   OK?:', response.ok);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Server error response:', errorText);
+            throw new Error(`HTTP Error: ${response.status} - ${errorText}`);
+        }
 
         const data = await response.json();
+        console.log('✅ Data ontvangen:', data);
+        console.log('💾 Chat moet nu opgeslagen zijn in MongoDB!');
+        
         removeTypingIndicator();
         displayBotMessage(data.reply || 'Sorry, ik kon geen antwoord genereren.');
 
     } catch (error) {
-        console.error('Chat Error:', error);
+        console.error('💥 FOUT bij verzenden:');
+        console.error('   Message:', error.message);
+        console.error('   Stack:', error.stack);
         removeTypingIndicator();
-        displayBotMessage('❌ Fout: Kan geen verbinding maken met de server op poort 3000. Start je server met: npm start');
+        displayBotMessage('❌ Fout: Kan geen verbinding maken met de server. Check de console voor details.');
     } finally {
         sendBtn.disabled = false;
         messageInput.focus();
@@ -176,4 +201,5 @@ async function sendMessageToBot(message) {
 // ============================================
 
 console.log('✅ Maatje AI Chatbot geladen');
+console.log('👤 User ID:', getUserId());
 
