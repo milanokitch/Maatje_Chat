@@ -196,6 +196,23 @@ async function sendMessageToBot(message) {
     }
 }
 
+// Functie om een bericht te verzenden naar de chatbot
+async function sendMessage(message) {
+    console.log('📩 Verzenden:', message);
+    try {
+        const response = await fetch(`${API_URL}/send`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ message }),
+        });
+        const data = await response.json();
+        console.log('📬 Ontvangen:', data);
+        return data;
+    } catch (error) {
+        console.error('❌ Fout bij verzenden:', error);
+    }
+}
+
 // ============================================
 // INIT
 // ============================================
