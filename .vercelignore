@@ -1,0 +1,19 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Environment variables (worden via Vercel dashboard ingesteld)
+.env
+.env.local
+
+# Development files
+.vscode
+.idea
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Other
+*.log

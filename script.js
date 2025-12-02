@@ -132,6 +132,13 @@ function removeTypingIndicator() {
 // ============================================
 
 /**
+ * Bepaal de juiste API URL (localhost of productie)
+ */
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000' 
+    : ''; // Gebruik relative path voor Vercel/productie
+
+/**
  * Stuur bericht naar OpenAI via backend
  */
 async function sendMessageToBot(message) {
@@ -139,7 +146,7 @@ async function sendMessageToBot(message) {
         sendBtn.disabled = true;
         displayTypingIndicator();
         
-        const response = await fetch('http://localhost:3000/api/chat', {
+        const response = await fetch(`${API_URL}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
