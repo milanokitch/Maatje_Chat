@@ -32,9 +32,11 @@ body {
 
 /* Header */
 .header {
-    background: #FF8C00;
+    display: flex;
+    align-items: center;
+    background-color: orange; /* Set the background color */
+    padding: 10px; /* Add some padding */
     color: white;
-    padding: 2rem 1rem;
     text-align: center;
     box-shadow: var(--shadow);
 }
@@ -48,6 +50,12 @@ body {
 .header p {
     font-size: 0.95rem;
     opacity: 0.95;
+}
+
+.logo {
+    width: 50px; /* Adjust width as needed */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: 10px; /* Space between logo and text */
 }
 
 /* Main Container */
@@ -283,6 +291,45 @@ body {
 
 .send-btn:active {
     transform: translateY(0);
+}
+
+/* Login Container */
+.login-container {
+    max-width: 350px;
+    margin: 80px auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-container h2 {
+    margin-bottom: 1.5rem;
+    color: var(--accent-purple);
+}
+
+.login-container input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 /* Scrollbar Styling */

@@ -4,6 +4,8 @@ const cors = require('cors');
 const { OpenAI } = require('openai');
 const mongoose = require('mongoose');
 const path = require('path');
+const bcrypt = require('bcryptjs');
+const session = require('express-session');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // Serve static files (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static files (HTML, CSS, JS)
 
 // ============================================
 // MongoDB Connection
@@ -35,6 +37,20 @@ if (process.env.MONGODB_URI) {
     });
 
     var Chat = mongoose.model('Chat', chatSchema);
+
+    // User model
+    const userSchema = new mongoose.Schema({
+        email: { type: String, required: true, unique: true },
+        password: { type: String, required: true }
+    });
+    const User = mongoose.model('User', userSchema);
+
+    // Express session
+    app.use(session({
+        secret: 'maatje_secret',
+        resave: false,
+        saveUninitialized: false
+    }));
 } else {
     console.log('⚠️ MONGODB_URI niet ingesteld. Chat history wordt niet opgeslagen.');
 }
@@ -165,6 +181,41 @@ app.get('/api/chat-history/:userId', async (req, res) => {
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: '✅ Server is online' });
+});
+
+// Registratie endpoint
+app.post('/api/register', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ success: false, message: 'Vul alle velden in.' });
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({ email, password: hashedPassword });
+        await user.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(400).json({ success: false, message: 'Gebruiker bestaat al.' });
+    }
+});
+
+// Login endpoint
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ success: false, message: 'Ongeldige inloggegevens.' });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ success: false, message: 'Ongeldige inloggegevens.' });
+    req.session.userId = user._id;
+    res.json({ success: true });
+});
+
+// Logout endpoint
+app.post('/api/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).json({ success: false, message: 'Kon niet uitloggen.' });
+        }
+        res.json({ success: true });
+    });
 });
 
 // Start server en verifieer Assistant
