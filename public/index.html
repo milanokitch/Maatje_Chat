@@ -2,17 +2,114 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maatje AI – Chatbot</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Header -->
     <header class="header">
         <img id="aborna-logo" src="images/cropped-favicon-1-1.png" alt="Aborna Logo" class="logo">
         <h1>Maatje AI – Chatbot</h1>
         <p>Jouw digitale hulplijn</p>
+        <button id="logoutBtn" class="logout-btn" style="display: none;">Uitloggen</button>
     </header>
+
+    <!-- Main Container -->
     <main class="container">
-        <!-- ...rest van de content... -->
+        <!-- Left Section: Information -->
+        <section class="info-section">
+            <h2>Welkom bij Maatje AI</h2>
+            <p>Ons chatbot-platform biedt 24/7 ondersteuning met:</p>
+            <ul>
+                <li>✓ Snelle en vriendelijke antwoorden</li>
+                <li>✓ Veilige en vertrouwelijke communicatie</li>
+                <li>✓ Altijd beschikbaar voor jou</li>
+                <li>✓ Personaliseerde ondersteuning</li>
+            </ul>
+            <p class="info-text">Stuur een bericht in het chatvenster en ontvang direct antwoord. Onze AI-assistent is hier om je te helpen!</p>
+        </section>
+
+        <!-- Right Section: Chat Window -->
+        <section class="chat-section">
+            <div class="chat-window" id="chatWindow">
+                <div class="message bot-message">
+                    <div class="message-content">Hallo! 👋 Ik ben Maatje AI. Hoe kan ik je vandaag helpen?</div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    class="chat-input" 
+                    placeholder="Typ je bericht hier..."
+                    autocomplete="off"
+                >
+                <button id="sendBtn" class="send-btn">Verstuur</button>
+            </div>
+        </section>
+
+        <div id="chatbot-description">
+            <h2>AI Chatbot for Aborna</h2>
+            <p>De AI Chatbot voor Aborna biedt gebruikers een interactieve ervaring door vragen te beantwoorden en ondersteuning te bieden. Deze chatbot is ontworpen om efficiënt en effectief te communiceren, waardoor gebruikers snel de informatie krijgen die ze nodig hebben.</p>
+        </div>
     </main>
+
+    <!-- Copilot Instructions -->
+    <!-- This section contains instructions for using GitHub Copilot across the website. -->
+    <!-- This section contains instructions for using GitHub Copilot throughout the website. -->
+
+    <img id="aborna-logo" src="images/cropped-favicon-1-1.png" alt="Aborna Logo" />
+
+    <style>
+        #chatbot-description {
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        #aborna-logo {
+            width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+
+        <!-- Supabase client toevoegen -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script>
+            // Supabase client initialiseren
+            const supabase = supabase.createClient(
+                'https://fhynxjujbwxxdxegomki.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoeW54anVqYnd4eGR4ZWdvbWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjkyMzYsImV4cCI6MjA4MDg0NTIzNn0.tTXCi7ptSw1P6IVouGwTZt5DMbCcTZofqpXO-P0UA3k'
+            );
+
+            // Check of gebruiker is ingelogd
+            async function checkAuth() {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    // Niet ingelogd, redirect naar login
+                    window.location.href = 'login.html';
+                } else {
+                    // Ingelogd, toon logout knop
+                    document.getElementById('logoutBtn').style.display = 'block';
+                    console.log('✅ Gebruiker ingelogd:', session.user.email);
+                }
+            }
+
+            // Logout functie
+            document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            });
+
+            // Check auth bij laden pagina
+            checkAuth();
+        </script>
+        <script src="script.js"></script>
 </body>
 </html>

@@ -2,20 +2,82 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Maatje AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inloggen - Maatje AI</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="login-container">
-        <h2>Inloggen</h2>
-        <form id="loginForm">
-            <input type="email" id="email" placeholder="E-mail" required>
-            <input type="password" id="password" placeholder="Wachtwoord" required>
-            <button type="submit">Inloggen</button>
-        </form>
-        <div id="loginError" style="color: red; margin-top: 10px;"></div>
-        <p style="margin-top: 1rem;">Nog geen account? <a href="register.html">Registreer hier</a></p>
+        <div class="login-box">
+            <img src="images/cropped-favicon-1-1.png" alt="Aborna Logo" class="auth-logo">
+            <h2>Inloggen bij Maatje AI</h2>
+            <p class="auth-subtitle">Log in om toegang te krijgen tot de chatbot</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">E-mailadres</label>
+                    <input type="email" id="loginEmail" placeholder="jouw@email.nl" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Wachtwoord</label>
+                    <input type="password" id="loginPassword" placeholder="Wachtwoord" required>
+                </div>
+                
+                <button type="submit" class="auth-btn">Inloggen</button>
+            </form>
+            
+            <div id="loginMessage" class="auth-message"></div>
+            
+            <p class="auth-switch">
+                Nog geen account? <a href="register.html">Registreer hier</a>
+            </p>
+        </div>
     </div>
-    <script src="login.js"></script>
+
+    <!-- Supabase client toevoegen -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase client initialiseren
+        const supabase = supabase.createClient(
+            'https://fhynxjujbwxxdxegomki.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoeW54anVqYnd4eGR4ZWdvbWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjkyMzYsImV4cCI6MjA4MDg0NTIzNn0.tTXCi7ptSw1P6IVouGwTZt5DMbCcTZofqpXO-P0UA3k'
+        );
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const messageDiv = document.getElementById('loginMessage');
+            
+            try {
+                // Inloggen via Supabase
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    messageDiv.style.color = 'red';
+                    messageDiv.textContent = 'Fout: ' + error.message;
+                } else {
+                    messageDiv.style.color = 'green';
+                    messageDiv.textContent = 'Login succesvol! Je wordt doorgestuurd...';
+                    console.log('✅ Login succesvol:', data);
+                    
+                    // Doorsturen naar hoofdpagina na 1 seconde
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                }
+            } catch (err) {
+                messageDiv.style.color = 'red';
+                messageDiv.textContent = 'Er ging iets mis. Probeer het opnieuw.';
+                console.error('Login error:', err);
+            }
+        });
+    </script>
 </body>
 </html>
