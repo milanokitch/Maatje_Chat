@@ -60,7 +60,7 @@
     <!-- This section contains instructions for using GitHub Copilot across the website. -->
     <!-- This section contains instructions for using GitHub Copilot throughout the website. -->
 
-    <img id="aborna-logo" src="images/cropped-favicon-1-1.png" alt="Aborna Logo" />
+    <img id="aborna-logo" src="images/cropped-favicon-1-1.png" alt="Abrona Logo" />
 
     <style>
         #chatbot-description {
@@ -82,14 +82,17 @@
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script>
             // Supabase client initialiseren
-            const supabase = supabase.createClient(
+            const { createClient } = supabase;
+            const supabaseClient = createClient(
                 'https://fhynxjujbwxxdxegomki.supabase.co',
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoeW54anVqYnd4eGR4ZWdvbWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjkyMzYsImV4cCI6MjA4MDg0NTIzNn0.tTXCi7ptSw1P6IVouGwTZt5DMbCcTZofqpXO-P0UA3k'
             );
+            // Maak supabase beschikbaar voor script.js
+            window.supabase = supabaseClient;
 
             // Check of gebruiker is ingelogd
             async function checkAuth() {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 
                 if (!session) {
                     // Niet ingelogd, redirect naar login
@@ -103,7 +106,7 @@
 
             // Logout functie
             document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-                await supabase.auth.signOut();
+                await supabaseClient.auth.signOut();
                 window.location.href = 'login.html';
             });
 
