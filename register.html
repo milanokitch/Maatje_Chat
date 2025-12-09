@@ -2,19 +2,100 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registreren - Maatje AI</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="login-container">
-        <h2>Registreren</h2>
-        <form id="registerForm">
-            <input type="email" id="regEmail" placeholder="E-mail" required>
-            <input type="password" id="regPassword" placeholder="Wachtwoord" required>
-            <button type="submit">Account aanmaken</button>
-        </form>
-        <div id="registerError" style="color: red; margin-top: 10px;"></div>
+        <div class="login-box">
+            <img src="images/cropped-favicon-1-1.png" alt="Aborna Logo" class="auth-logo">
+            <h2>Registreren bij Maatje AI</h2>
+            <p class="auth-subtitle">Maak een account aan om te chatten</p>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="regEmail">E-mailadres</label>
+                    <input type="email" id="regEmail" placeholder="jouw@email.nl" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword">Wachtwoord</label>
+                    <input type="password" id="regPassword" placeholder="Minimaal 6 tekens" required minlength="6">
+                </div>
+                
+                <button type="submit" class="auth-btn">Account aanmaken</button>
+            </form>
+            
+            <div id="registerMessage" class="auth-message"></div>
+            
+            <p class="auth-switch">
+                Al een account? <a href="login.html">Log hier in</a>
+            </p>
+        </div>
     </div>
-    <script src="register.js"></script>
+    <!-- Copilot Instructions -->
+    <!--
+    1. **Loginpagina**: Gebruikers kunnen inloggen met hun e-mailadres en wachtwoord.
+    2. **Registratiepagina**: Nieuwe gebruikers kunnen zich registreren met hun gegevens.
+    3. **Backend Authenticatie**: De app maakt gebruik van Express en MongoDB voor gebruikersauthenticatie.
+    4. **Wachtwoord Hashing**: Wachtwoorden worden gehasht voor beveiliging.
+    5. **API Endpoints**: Er zijn endpoints voor login en registratie.
+    6. **Frontend-Backend Integratie**: De frontend communiceert met de backend via API-aanroepen.
+    -->
+    <!--
+    This application is designed for user authentication and includes the following features:
+
+    1. **User Registration**: Users can create an account by providing their email and password.
+    2. **User Login**: Users can log in using their registered email and password.
+    3. **Password Hashing**: Passwords are securely hashed before being stored in the database.
+    4. **Session Management**: User sessions are managed to keep users logged in.
+    5. **Error Handling**: Proper error messages are displayed for failed login attempts or registration issues.
+    6. **Responsive Design**: The frontend is designed to be responsive and user-friendly.
+    -->
+        <!-- Supabase client toevoegen -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script>
+            // Supabase client initialiseren
+            const supabase = supabase.createClient(
+                'https://fhynxjujbwxxdxegomki.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoeW54anVqYnd4eGR4ZWdvbWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjkyMzYsImV4cCI6MjA4MDg0NTIzNn0.tTXCi7ptSw1P6IVouGwTZt5DMbCcTZofqpXO-P0UA3k'
+            );
+
+            // Registratie form handler
+            document.getElementById('registerForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('regEmail').value.trim();
+                const password = document.getElementById('regPassword').value.trim();
+                const messageDiv = document.getElementById('registerMessage');
+                
+                try {
+                    // Registreren via Supabase Auth
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password
+                    });
+                    
+                    if (error) {
+                        messageDiv.style.color = 'red';
+                        messageDiv.textContent = 'Fout: ' + error.message;
+                    } else {
+                        messageDiv.style.color = 'green';
+                        messageDiv.textContent = '✅ Account aangemaakt! Check je e-mail voor bevestiging.';
+                        console.log('✅ Registratie succesvol:', data);
+                        
+                        // Optioneel: doorsturen naar login pagina na 3 seconden
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 3000);
+                    }
+                } catch (err) {
+                    messageDiv.style.color = 'red';
+                    messageDiv.textContent = 'Er ging iets mis. Probeer het opnieuw.';
+                    console.error('Registratie error:', err);
+                }
+            });
+        </script>
 </body>
 </html>

@@ -12,6 +12,7 @@
         <img id="aborna-logo" src="images/cropped-favicon-1-1.png" alt="Aborna Logo" class="logo">
         <h1>Maatje AI – Chatbot</h1>
         <p>Jouw digitale hulplijn</p>
+        <button id="logoutBtn" class="logout-btn" style="display: none;">Uitloggen</button>
     </header>
 
     <!-- Main Container -->
@@ -55,6 +56,10 @@
         </div>
     </main>
 
+    <!-- Copilot Instructions -->
+    <!-- This section contains instructions for using GitHub Copilot across the website. -->
+    <!-- This section contains instructions for using GitHub Copilot throughout the website. -->
+
     <img id="aborna-logo" src="images/cropped-favicon-1-1.png" alt="Aborna Logo" />
 
     <style>
@@ -73,6 +78,38 @@
         }
     </style>
 
-    <script src="script.js"></script>
+        <!-- Supabase client toevoegen -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script>
+            // Supabase client initialiseren
+            const supabase = supabase.createClient(
+                'https://fhynxjujbwxxdxegomki.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoeW54anVqYnd4eGR4ZWdvbWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjkyMzYsImV4cCI6MjA4MDg0NTIzNn0.tTXCi7ptSw1P6IVouGwTZt5DMbCcTZofqpXO-P0UA3k'
+            );
+
+            // Check of gebruiker is ingelogd
+            async function checkAuth() {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    // Niet ingelogd, redirect naar login
+                    window.location.href = 'login.html';
+                } else {
+                    // Ingelogd, toon logout knop
+                    document.getElementById('logoutBtn').style.display = 'block';
+                    console.log('✅ Gebruiker ingelogd:', session.user.email);
+                }
+            }
+
+            // Logout functie
+            document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            });
+
+            // Check auth bij laden pagina
+            checkAuth();
+        </script>
+        <script src="script.js"></script>
 </body>
 </html>

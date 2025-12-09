@@ -1,11 +1,10 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { OpenAI } = require('openai');
-const mongoose = require('mongoose');
 const path = require('path');
-const bcrypt = require('bcryptjs');
-const session = require('express-session');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,43 +15,14 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files (HTML, CSS, JS)
 
 // ============================================
-// MongoDB Connection
+// Supabase Client Setup
 // ============================================
-if (process.env.MONGODB_URI) {
-    mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    }).then(() => {
-        console.log('✅ MongoDB verbonden');
-    }).catch(err => {
-        console.error('❌ MongoDB Error:', err.message);
-    });
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Chat History Schema
-    const chatSchema = new mongoose.Schema({
-        userId: { type: String, default: 'anonymous' },
-        userMessage: String,
-        botReply: String,
-        timestamp: { type: Date, default: Date.now }
-    });
-
-    var Chat = mongoose.model('Chat', chatSchema);
-
-    // User model
-    const userSchema = new mongoose.Schema({
-        email: { type: String, required: true, unique: true },
-        password: { type: String, required: true }
-    });
-    const User = mongoose.model('User', userSchema);
-
-    // Express session
-    app.use(session({
-        secret: 'maatje_secret',
-        resave: false,
-        saveUninitialized: false
-    }));
-} else {
-    console.log('⚠️ MONGODB_URI niet ingesteld. Chat history wordt niet opgeslagen.');
+if (!supabaseUrl || !supabaseKey) {
+    console.log('⚠️ SUPABASE_URL of SUPABASE_KEY niet ingesteld. Supabase functionaliteit is uitgeschakeld.');
 }
 
 // OpenAI configuratie
@@ -135,18 +105,21 @@ app.post('/api/chat', async (req, res) => {
 
         console.log('🤖 Assistant antwoord ontvangen');
 
-        // Sla op in MongoDB (als beschikbaar)
-        if (typeof Chat !== 'undefined') {
+
+        // Sla chat op in Supabase (optioneel)
+        if (supabaseUrl && supabaseKey) {
             try {
-                await Chat.create({
-                    userId: userId || 'anonymous',
-                    userMessage: message,
-                    botReply: botReply,
-                    timestamp: new Date()
-                });
-                console.log('💾 Chat opgeslagen in database');
+                await supabase.from('chat_history').insert([
+                    {
+                        user_id: userId || 'anonymous',
+                        user_message: message,
+                        bot_reply: botReply,
+                        timestamp: new Date().toISOString()
+                    }
+                ]);
+                console.log('💾 Chat opgeslagen in Supabase');
             } catch (dbError) {
-                console.error('⚠️ Database error:', dbError.message);
+                console.error('⚠️ Supabase error:', dbError.message);
             }
         }
 
@@ -164,15 +137,22 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Chat history ophalen
+
+// Chat history ophalen uit Supabase
 app.get('/api/chat-history/:userId', async (req, res) => {
     try {
-        if (typeof Chat === 'undefined') {
-            return res.status(503).json({ error: 'Database niet beschikbaar' });
+        if (!supabaseUrl || !supabaseKey) {
+            return res.status(503).json({ error: 'Supabase niet beschikbaar' });
         }
         const { userId } = req.params;
-        const history = await Chat.find({ userId }).sort({ timestamp: -1 }).limit(50);
-        res.json(history);
+        const { data, error } = await supabase
+            .from('chat_history')
+            .select('*')
+            .eq('user_id', userId)
+            .order('timestamp', { ascending: false })
+            .limit(50);
+        if (error) throw error;
+        res.json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -183,40 +163,9 @@ app.get('/api/health', (req, res) => {
     res.json({ status: '✅ Server is online' });
 });
 
-// Registratie endpoint
-app.post('/api/register', async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ success: false, message: 'Vul alle velden in.' });
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ email, password: hashedPassword });
-        await user.save();
-        res.json({ success: true });
-    } catch (err) {
-        res.status(400).json({ success: false, message: 'Gebruiker bestaat al.' });
-    }
-});
 
-// Login endpoint
-app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ success: false, message: 'Ongeldige inloggegevens.' });
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ success: false, message: 'Ongeldige inloggegevens.' });
-    req.session.userId = user._id;
-    res.json({ success: true });
-});
-
-// Logout endpoint
-app.post('/api/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            return res.status(500).json({ success: false, message: 'Kon niet uitloggen.' });
-        }
-        res.json({ success: true });
-    });
-});
+// Supabase Auth wordt gebruikt voor login/registratie via frontend
+// Backend endpoints voor login/register zijn verwijderd
 
 // Start server en verifieer Assistant
 app.listen(PORT, async () => {
