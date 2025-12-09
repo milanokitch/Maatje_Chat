@@ -56,7 +56,10 @@
                 // Registreren via Supabase Auth
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
-                    password: password
+                    password: password,
+                    options: {
+                        emailRedirectTo: window.location.origin
+                    }
                 });
                 
                 if (error) {
@@ -64,13 +67,28 @@
                     messageDiv.textContent = 'Fout: ' + error.message;
                 } else {
                     messageDiv.style.color = 'green';
-                    messageDiv.textContent = '✅ Account aangemaakt! Check je e-mail voor bevestiging.';
-                    console.log('✅ Registratie succesvol:', data);
                     
-                    // Optioneel: doorsturen naar login pagina na 3 seconden
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 3000);
+                    // Check of email confirmatie vereist is
+                    if (data.user && data.user.identities && data.user.identities.length === 0) {
+                        messageDiv.textContent = '✅ Account bestaat al. Stuur je door naar login...';
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 2000);
+                    } else if (data.session) {
+                        // Gebruiker is direct ingelogd (email confirmatie uit)
+                        messageDiv.textContent = '✅ Account aangemaakt! Je wordt doorgestuurd naar de chat...';
+                        console.log('✅ Registratie succesvol en direct ingelogd:', data);
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1500);
+                    } else {
+                        // Email confirmatie vereist
+                        messageDiv.textContent = '✅ Account aangemaakt! Check je e-mail voor bevestiging en log daarna in.';
+                        console.log('✅ Registratie succesvol, email confirmatie vereist:', data);
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 4000);
+                    }
                 }
             } catch (err) {
                 messageDiv.style.color = 'red';

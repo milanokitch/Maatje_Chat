@@ -4,18 +4,28 @@ const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 
 // ============================================
-// User ID Management
+// User ID Management (via Supabase Auth)
 // ============================================
 
 /**
- * Genereer of haal user ID op uit localStorage
+ * Haal Supabase user ID op van ingelogde gebruiker
  */
-function getUserId() {
+async function getUserId() {
+    // Check of supabase beschikbaar is (geladen via index.html)
+    if (typeof supabase !== 'undefined') {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+            console.log('🆔 Supabase User ID:', session.user.id);
+            return session.user.id;
+        }
+    }
+    
+    // Fallback naar oude localStorage methode als Supabase niet beschikbaar is
     let userId = localStorage.getItem('maatje_userId');
     if (!userId) {
         userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('maatje_userId', userId);
-        console.log('🆔 Nieuwe user ID aangemaakt:', userId);
+        console.log('🆔 Nieuwe fallback user ID aangemaakt:', userId);
     }
     return userId;
 }
@@ -84,7 +94,7 @@ function addMessageToChat(messageText, messageClass, isHTML = false) {
         try {
             sendBtn.disabled = true;
             displayTypingIndicator();
-            const userId = getUserId();
+            const userId = await getUserId(); // Await toegevoegd voor async functie
             const requestBody = { message, userId };
 
             // Probeer backend
@@ -218,5 +228,9 @@ async function sendMessage(message) {
 // ============================================
 
 console.log('✅ Maatje AI Chatbot geladen');
-console.log('👤 User ID:', getUserId());
+
+// Log user ID (async)
+getUserId().then(userId => {
+    console.log('👤 User ID:', userId);
+});
 
