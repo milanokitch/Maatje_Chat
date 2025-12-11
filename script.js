@@ -1,14 +1,19 @@
 // ============================================
 // Supabase Configuration
 // ============================================
-let supabaseClient;
+const supabaseUrl = 'https://fhynxjujbwxxdxegomki.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoeW54anVqYnd4eGR4ZWdvbWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjkyMzYsImV4cCI6MjA4MDg0NTIzNn0.tTXCi7ptSw1P6IVouGwTZt5DMbCcTZofqpXO-P0UA3k';
 
-// Check if supabase is available (from window)
-if (typeof window !== 'undefined' && window.supabase) {
-    supabaseClient = window.supabase;
-    console.log('✅ Supabase client found from window');
+let supabaseClient = typeof window !== 'undefined' ? window.__maatjeSupabaseClient ?? null : null;
+
+if (!supabaseClient && typeof window !== 'undefined' && window.supabase && typeof window.supabase.createClient === 'function') {
+    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    window.__maatjeSupabaseClient = supabaseClient;
+    console.log('✅ Supabase client initialized via createClient');
+} else if (supabaseClient) {
+    console.log('♻️ Supabase client reused');
 } else {
-    console.error('❌ Supabase client not found');
+    console.error('❌ Supabase library not found, auth features disabled');
 }
 
 // DOM Elements (will be set when DOM loads)
