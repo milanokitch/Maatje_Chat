@@ -4,40 +4,47 @@ const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 
 // ============================================
-// User ID Management (via Supabase Auth)
+// Supabase Configuration
+// ============================================
+let supabaseClient;
+
+// Check if supabase is available (from window)
+if (typeof window !== 'undefined' && window.supabase) {
+    supabaseClient = window.supabase;
+    console.log('✅ Supabase client found from window');
+} else {
+    console.error('❌ Supabase client not found');
+}
+
+// ============================================
+// User ID Management
 // ============================================
 
 /**
  * Haal Supabase user ID op van ingelogde gebruiker
  */
 async function getUserId() {
-    // Check of supabase beschikbaar is (geladen via index.html)
-    if (typeof supabase !== 'undefined') {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && session.user) {
-            console.log('🆔 Supabase User ID:', session.user.id);
-            return session.user.id;
+    try {
+        if (!supabaseClient) {
+            console.error('❌ Supabase client niet beschikbaar');
+            return 'anonymous_' + Date.now();
         }
-    }
-    
-    // Fallback naar oude localStorage methode als Supabase niet beschikbaar is
-    let userId = localStorage.getItem('maatje_userId');
-    if (!userId) {
-        userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('maatje_userId', userId);
-        console.log('🆔 Nieuwe fallback user ID aangemaakt:', userId);
-    }
-    return userId;
-}
 
-// Event Listeners
-sendBtn.addEventListener('click', sendMessage);
-messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        
+        if (error || !user) {
+            console.log('⚠️ Geen geauthenticeerde gebruiker');
+            // Fallback voor ontwikkeling
+            return 'anonymous_' + Date.now();
+        }
+        
+        console.log('✅ Authenticated user:', user.id);
+        return user.id;
+    } catch (error) {
+        console.error('❌ Error getting user:', error);
+        return 'anonymous_' + Date.now();
     }
-});
+}
 
 // ============================================
 // HELPER FUNCTIONS
@@ -58,7 +65,7 @@ function addMessageToChat(messageText, messageClass, isHTML = false) {
     messageElement.className = `message ${messageClass}`;
 
     const contentElement = document.createElement('div');
-    contentElement.className = messageClass === 'typing-indicator' ? 'typing-indicator' : 'message-content';
+    contentElement.className = 'message-content';
     
     if (isHTML) {
         contentElement.innerHTML = messageText;
@@ -67,170 +74,203 @@ function addMessageToChat(messageText, messageClass, isHTML = false) {
     }
 
     messageElement.appendChild(contentElement);
-    if (messageClass === 'bot-message' && messageText === '') {
-        messageElement.id = 'typing-indicator';
-    }
-    
     chatWindow.appendChild(messageElement);
-    // API FUNCTIONS
+    scrollChatToBottom();
+}
 
-    // Supabase client ophalen uit window (toegevoegd in index.html)
-    const supabase = window.supabase;
+// ============================================
+// MAIN FUNCTIONS
+// ============================================
 
-    /**
-     * Bepaal de juiste API URL (localhost of productie)
-     */
-    const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000' 
-        : 'https://maatjechat.vercel.app'; // Gebruik de volledige URL voor Vercel
+/**
+ * Verstuur gebruikersbericht
+ */
+async function sendMessage() {
+    const message = messageInput.value.trim();
 
-    console.log('� API URL:', API_URL);
-    console.log('🌐 Hostname:', window.location.hostname);
-
-    /**
-     * Stuur bericht naar OpenAI via backend, en sla op in Supabase als fallback
-     */
-    async function sendMessageToBot(message) {
-        try {
-            sendBtn.disabled = true;
-            displayTypingIndicator();
-            const userId = await getUserId(); // Await toegevoegd voor async functie
-            const requestBody = { message, userId };
-
-            // Probeer backend
-            let botReply = null;
-            let backendSuccess = false;
-            try {
-                const response = await fetch(`${API_URL}/api/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    botReply = data.reply || 'Sorry, ik kon geen antwoord genereren.';
-                    backendSuccess = true;
-                }
-            } catch (err) {
-                console.warn('Backend niet bereikbaar, probeer Supabase direct.');
-            }
-
-            // Als backend niet werkt, sla direct op in Supabase
-            if (!backendSuccess && supabase) {
-                botReply = 'Bericht opgeslagen in Supabase (geen AI antwoord).';
-                try {
-                    await supabase.from('chat_history').insert([
-                        {
-                            user_id: userId,
-                            user_message: message,
-                            bot_reply: botReply,
-                            timestamp: new Date().toISOString()
-                        }
-                    ]);
-                    console.log('💾 Chat opgeslagen in Supabase');
-                } catch (dbError) {
-                    console.error('⚠️ Supabase error:', dbError.message);
-                    botReply = 'Fout bij opslaan in Supabase.';
-                }
-            }
-
-            removeTypingIndicator();
-            displayBotMessage(botReply);
-
-        } catch (error) {
-            console.error('💥 FOUT bij verzenden:');
-            console.error('   Message:', error.message);
-            console.error('   Stack:', error.stack);
-            removeTypingIndicator();
-            displayBotMessage('❌ Fout: Kan geen verbinding maken met de server. Check de console voor details.');
-        } finally {
-            sendBtn.disabled = false;
-            messageInput.focus();
-        }
+    if (!message) {
+        console.log('⚠️ Leeg bericht, niet verzonden');
+        return;
     }
 
-// Verwijder typing indicator
+    console.log('📝 Gebruiker typt:', message);
+    displayUserMessage(message);
+    messageInput.value = '';
+    messageInput.focus();
+    await sendMessageToBot(message);
+}
+
+/**
+ * Toon gebruikersbericht
+ */
+function displayUserMessage(message) {
+    addMessageToChat(message, 'user-message');
+}
+
+/**
+ * Toon botbericht
+ */
+function displayBotMessage(message) {
+    addMessageToChat(message, 'bot-message');
+}
+
+/**
+ * Toon typing indicator
+ */
+function displayTypingIndicator() {
+    const messageElement = document.createElement('div');
+    messageElement.className = 'message bot-message';
+    messageElement.id = 'typing-indicator';
+
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+
+    for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'typing-dot';
+        typingDiv.appendChild(dot);
+    }
+
+    messageElement.appendChild(typingDiv);
+    chatWindow.appendChild(messageElement);
+    scrollChatToBottom();
+}
+
+/**
+ * Verwijder typing indicator
+ */
 function removeTypingIndicator() {
     const typingElement = document.getElementById('typing-indicator');
     if (typingElement) typingElement.remove();
 }
 
+// ============================================
+// API FUNCTIONS
+// ============================================
+
 /**
- * Stuur bericht naar OpenAI via backend
+ * Bepaal de juiste API URL
+ */
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000' 
+    : 'https://maatjechat.vercel.app';
+
+console.log('🔗 API URL:', API_URL);
+
+/**
+ * Stuur bericht naar OpenAI via backend, met Supabase fallback
  */
 async function sendMessageToBot(message) {
     try {
         sendBtn.disabled = true;
         displayTypingIndicator();
         
-        const userId = getUserId();
-        const requestBody = { message, userId };
+        const userId = await getUserId();
         
         console.log('📤 Verzenden naar API...');
-        console.log('   URL:', `${API_URL}/api/chat`);
         console.log('   Message:', message);
         console.log('   User ID:', userId);
         
-        const response = await fetch(`${API_URL}/api/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
+        let botReply = null;
+        let backendSuccess = false;
 
-        console.log('📥 Response ontvangen');
-        console.log('   Status:', response.status);
-        console.log('   OK?:', response.ok);
+        // Probeer backend voor OpenAI
+        try {
+            const response = await fetch(`${API_URL}/api/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, userId })
+            });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Server error response:', errorText);
-            throw new Error(`HTTP Error: ${response.status} - ${errorText}`);
+            if (response.ok) {
+                const data = await response.json();
+                botReply = data.reply || 'Sorry, ik kon geen antwoord genereren.';
+                backendSuccess = true;
+                console.log('✅ OpenAI response ontvangen');
+            }
+        } catch (err) {
+            console.warn('⚠️ Backend niet bereikbaar, gebruik fallback');
         }
 
-        const data = await response.json();
-        console.log('✅ Data ontvangen:', data);
-        console.log('💾 Chat moet nu opgeslagen zijn in MongoDB!');
-        
+        // Fallback als backend niet werkt
+        if (!backendSuccess) {
+            const fallbackResponses = [
+                "Hallo! Ik ben Maatje AI. Hoe kan ik je vandaag helpen?",
+                "Bedankt voor je bericht! Mijn OpenAI verbinding wordt momenteel geconfigureerd. Kan ik je ergens anders mee helpen?",
+                "Ik hoor je! Hoewel mijn AI-brain nog wordt ingesteld, ben ik er wel voor je. Wat zou je willen weten?",
+                "Super dat je contact opneemt! Even geduld terwijl mijn systemen opstarten. Hoe gaat het met je?"
+            ];
+            botReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+            console.log('🔄 Gebruikt fallback response');
+        }
+
+        // Sla op in Supabase (als beschikbaar)
+        if (supabaseClient) {
+            try {
+                await supabaseClient.from('chat_history').insert([
+                    {
+                        user_id: userId,
+                        user_message: message,
+                        bot_reply: botReply,
+                        timestamp: new Date().toISOString()
+                    }
+                ]);
+                console.log('💾 Chat opgeslagen in Supabase');
+            } catch (dbError) {
+                console.error('⚠️ Supabase opslag fout:', dbError.message);
+            }
+        }
+
         removeTypingIndicator();
-        displayBotMessage(data.reply || 'Sorry, ik kon geen antwoord genereren.');
+        displayBotMessage(botReply);
 
     } catch (error) {
-        console.error('💥 FOUT bij verzenden:');
-        console.error('   Message:', error.message);
-        console.error('   Stack:', error.stack);
+        console.error('💥 Chat fout:', error);
         removeTypingIndicator();
-        displayBotMessage('❌ Fout: Kan geen verbinding maken met de server. Check de console voor details.');
+        displayBotMessage('❌ Er ging iets mis. Probeer het opnieuw.');
     } finally {
         sendBtn.disabled = false;
         messageInput.focus();
     }
 }
 
-// Functie om een bericht te verzenden naar de chatbot
-async function sendMessage(message) {
-    console.log('📩 Verzenden:', message);
-    try {
-        const response = await fetch(`${API_URL}/send`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ message }),
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
+// Wacht tot DOM geladen is
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 DOM geladen, adding event listeners...');
+    
+    // Voeg event listeners toe als elementen bestaan
+    if (sendBtn && messageInput) {
+        sendBtn.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         });
-        const data = await response.json();
-        console.log('📬 Ontvangen:', data);
-        return data;
-    } catch (error) {
-        console.error('❌ Fout bij verzenden:', error);
+        
+        console.log('✅ Event listeners toegevoegd');
+        
+        // Focus op input
+        messageInput.focus();
+    } else {
+        console.error('❌ Send button of message input niet gevonden!');
     }
-}
+});
 
 // ============================================
 // INIT
 // ============================================
 
-console.log('✅ Maatje AI Chatbot geladen');
-
-// Log user ID (async)
-getUserId().then(userId => {
+window.addEventListener('load', async () => {
+    console.log('✅ Pagina geladen');
+    
+    const userId = await getUserId();
     console.log('👤 User ID:', userId);
 });
 
+console.log('✅ Maatje AI Chatbot script geladen');
