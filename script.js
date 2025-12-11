@@ -1,8 +1,3 @@
-// DOM Elements
-const chatWindow = document.getElementById('chatWindow');
-const messageInput = document.getElementById('messageInput');
-const sendBtn = document.getElementById('sendBtn');
-
 // ============================================
 // Supabase Configuration
 // ============================================
@@ -15,6 +10,9 @@ if (typeof window !== 'undefined' && window.supabase) {
 } else {
     console.error('❌ Supabase client not found');
 }
+
+// DOM Elements (will be set when DOM loads)
+let chatWindow, messageInput, sendBtn;
 
 // ============================================
 // User ID Management
@@ -240,15 +238,31 @@ async function sendMessageToBot(message) {
 
 // Wacht tot DOM geladen is
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎯 DOM geladen, adding event listeners...');
+    console.log('🎯 DOM geladen, getting elements and adding event listeners...');
+    
+    // Haal DOM elementen op
+    chatWindow = document.getElementById('chatWindow');
+    messageInput = document.getElementById('messageInput');
+    sendBtn = document.getElementById('sendBtn');
+    
+    // Check of alle elementen gevonden zijn
+    if (!chatWindow) console.error('❌ chatWindow niet gevonden!');
+    if (!messageInput) console.error('❌ messageInput niet gevonden!');
+    if (!sendBtn) console.error('❌ sendBtn niet gevonden!');
     
     // Voeg event listeners toe als elementen bestaan
-    if (sendBtn && messageInput) {
-        sendBtn.addEventListener('click', sendMessage);
+    if (sendBtn && messageInput && chatWindow) {
+        console.log('✅ Alle DOM elementen gevonden');
         
-        messageInput.addEventListener('keypress', (e) => {
+        sendBtn.addEventListener('click', function() {
+            console.log('🖱️ Send button clicked!');
+            sendMessage();
+        });
+        
+        messageInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
+                console.log('⌨️ Enter pressed!');
                 sendMessage();
             }
         });
@@ -257,8 +271,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Focus op input
         messageInput.focus();
+        
+        // Test bericht
+        addMessageToChat('👋 Hallo! Ik ben Maatje AI. Hoe kan ik je helpen?', 'bot-message');
+        
     } else {
-        console.error('❌ Send button of message input niet gevonden!');
+        console.error('❌ Een of meer DOM elementen niet gevonden!');
+        console.log('chatWindow:', chatWindow);
+        console.log('messageInput:', messageInput); 
+        console.log('sendBtn:', sendBtn);
     }
 });
 
