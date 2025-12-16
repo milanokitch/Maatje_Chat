@@ -164,16 +164,27 @@ app.get('/api/health', (req, res) => {
 });
 
 
-// Supabase Auth wordt gebruikt voor login/registratie via frontend
-// Backend endpoints voor login/register zijn verwijderd
+// ==========================================
+// SERVER STARTUP (Aangepast voor Vercel)
+// ==========================================
 
-// Start server en verifieer Assistant
-app.listen(PORT, async () => {
-    console.log(`✅ Maatje AI Server draait op http://localhost:${PORT}`);
-    try {
-        await getAssistantInfo();
-    } catch (error) {
-        console.error('❌ Kon Assistant niet laden:', error.message);
-    }
-    console.log('💬 Chatbot is klaar voor gebruik!');
-});
+// Stap 1: Check of we lokaal zijn of op Vercel
+if (process.env.NODE_ENV !== 'production') {
+    // We zijn lokaal (localhost): Start de server handmatig
+    app.listen(PORT, async () => {
+        console.log(`✅ Maatje AI Server draait op http://localhost:${PORT}`);
+        try {
+            // Probeer assistant info te laden voor de sier/check
+            if (typeof getAssistantInfo === 'function') {
+                await getAssistantInfo();
+            }
+        } catch (error) {
+            console.error('❌ Kon Assistant niet laden:', error.message);
+        }
+        console.log('💬 Chatbot is klaar voor gebruik!');
+    });
+}
+
+// Stap 2: Exporteer de app zodat Vercel hem kan gebruiken
+// DIT IS DE BELANGRIJKSTE REGEL VOOR VERCEL:
+module.exports = app;
