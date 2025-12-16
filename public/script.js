@@ -188,10 +188,38 @@
     }
 
     // ============================================
+    // GESCHIEDENIS LADEN
+    // ============================================
+
+    async function loadChatHistory(userId) {
+        if (!localSupabaseClient) return;
+
+        console.log('📚 Oude chats ophalen voor:', userId);
+
+        const { data, error } = await localSupabaseClient
+            .from('chat_history')
+            .select('*')
+            .eq('user_id', userId)
+            .order('timestamp', { ascending: true });
+
+        if (error) {
+            console.error('❌ Fout bij laden geschiedenis:', error);
+            return;
+        }
+
+        data.forEach(row => {
+            if (row.user_message) displayUserMessage(row.user_message);
+            if (row.bot_reply) displayBotMessage(row.bot_reply);
+        });
+        
+        scrollChatToBottom();
+    }
+
+    // ============================================
     // EVENT LISTENERS
     // ============================================
 
-    function initChat() {
+    async function initChat() {
         console.log('🎯 Initialiseren chat elementen...');
         chatWindow = document.getElementById('chatWindow');
         messageInput = document.getElementById('messageInput');
@@ -213,6 +241,13 @@
             });
 
             console.log('✅ Chat events gekoppeld');
+            
+            // 1. Wie ben ik?
+            const userId = await getUserId();
+            console.log('👤 User ID:', userId);
+
+            // 2. Haal mijn geschiedenis op!
+            await loadChatHistory(userId);
             
             // Welkomstbericht als leeg
             if (chatWindow.children.length === 0) {
