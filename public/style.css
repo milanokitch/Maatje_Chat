@@ -492,27 +492,26 @@ body {
    ========================================= */
 @media (max-width: 768px) {
 
-    /* 1. De Container mag nu scrollen (height: auto) */
+    /* --- ALGEMENE STRUCTUUR --- */
     .container {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.5rem; /* Iets meer ruimte tussen chat en info */
         padding: 10px;
         margin: 0;
         max-width: 100%;
-        height: auto;        /* BELANGRIJK: Laat de pagina groeien */
-        min-height: 100vh;   /* Minimaal zo groot als het scherm */
+        height: auto;
+        min-height: 100vh;
     }
 
-    /* 2. De Chat (VIP: Moet als EERSTE staan) */
+    /* --- SECTIE 1: DE CHAT (Bovenaan) --- */
     .chat-section {
-        order: -1;       /* <--- DIT IS DE TRUC! -1 betekent: ga helemaal naar voren */
+        order: 1;           /* Prioriteit 1: Komt als eerste */
         flex: 1;
-        height: 75vh;
-        min-height: 400px;
+        height: 80vh;       /* Lekker groot: 80% van het scherm */
+        min-height: 450px;
         display: flex;
         flex-direction: column;
-        margin-bottom: 20px; /* Klein beetje ruimte onder de chat */
     }
 
     .chat-window {
@@ -520,32 +519,54 @@ body {
         max-height: none;
     }
 
-    /* 3. De Info Tekst (Mag achteraan sluiten) */
+    /* --- SECTIE 2: DE INFO (Onderaan) --- */
     .info-section {
-        order: 2;        /* <--- Deze komt nu netjes onder de chat */
-        padding: 1rem;
-        margin-bottom: 30px;
+        order: 2;           /* Prioriteit 2: Komt ONDER de chat */
+        padding: 1.5rem;
+        margin-bottom: 30px; /* Ruimte om te scrollen */
+        background: #fff3e0; /* Licht oranje achtergrondje om het 'los' te maken van de chat */
     }
 
-    /* 4. Header aanpassingen */
+    /* --- COMPACTE HEADER --- */
     .header {
-        padding: 10px;
-        justify-content: space-between;
+        padding: 8px 12px; /* Minder padding maakt hem minder hoog */
+        justify-content: space-between; /* Verdeel: Links | Midden | Rechts */
+        align-items: center;
+        gap: 5px; /* Minder ruimte tussen elementen */
+    }
+
+    /* Het logo links */
+    .logo {
+        height: 32px; /* Iets kleiner logo */
+        flex: 0 0 auto; /* Zorg dat hij niet krimpt */
+    }
+
+    /* De tekst in het midden */
+    .header-text {
+        flex: 1; /* Pak alle ruimte in het midden */
+        align-items: center; /* Centreer de tekst horizontaal */
+        white-space: nowrap; /* Zorg dat de tekst op 1 regel blijft */
+        overflow: hidden; /* Verberg als het toch te lang is */
+        text-overflow: ellipsis; /* Zet er puntjes (...) neer als het te lang is */
     }
 
     .header h1 {
-        font-size: 1.2rem;
+        font-size: 1rem; /* Kleiner lettertype voor de titel */
+        margin: 0;
     }
     
     .header p {
-        display: none; /* Ondertitel weg op mobiel */
+        display: none; /* Ondertitel blijft verborgen */
     }
 
-    .logo {
-        height: 35px;
+    /* De knop rechts */
+    .logout-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        flex: 0 0 auto; /* Zorg dat hij niet krimpt */
     }
 
-    /* Knoppen mobiel vriendelijk maken */
+    /* --- OVERIGE MOBIELE TWEAKS --- */
     .chat-input {
         font-size: 16px; /* Voorkomt inzoomen op iPhone */
     }
