@@ -298,6 +298,10 @@ body {
     display: flex;
     gap: 0.75rem;
     padding: 1rem;
+    
+    /* NIEUW: Extra ruimte voor mobiel */
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom)); 
+    
     background: var(--secondary-color);
     border-top: 1px solid var(--border-color);
 }
@@ -509,7 +513,7 @@ body {
     .chat-section {
         order: 1 !important;
         flex: 1;
-        height: 75vh; 
+        height: 80dvh;       /* NIEUW: dvh houdt rekening met de browserbalk! */
         min-height: 400px;
         display: flex;
         flex-direction: column;
@@ -621,17 +625,24 @@ body {
     color: var(--primary-color);
 }
 
-/* 3. DE MAGIE: Hoe ziet de chat eruit in fullscreen mode? */
+/* 3. DE MAGIE: Fullscreen met iPhone fix */
 .chat-section.fullscreen-mode {
-    position: fixed !important; /* Forceer vaste positie */
+    position: fixed !important;
     top: 0;
     left: 0;
-    width: 100vw;  /* Volle breedte */
-    height: 100vh; /* Volle hoogte */
-    z-index: 9999; /* Zorg dat hij BOVEN de header en alles ligt */
+    width: 100vw;
+    
+    /* BELANGRIJK: Gebruik dvh in plaats van vh */
+    height: 100dvh; 
+    
+    z-index: 9999;
     margin: 0 !important;
     border-radius: 0;
-    order: unset !important; /* Negeer de volgorde regels */
+    order: unset !important;
+    
+    /* EXTRA: Zorgt voor ruimte bij het 'zwarte streepje' onderaan iPhones */
+    padding-bottom: env(safe-area-inset-bottom); 
+    background: white; /* Zeker weten dat het niet doorzichtig is */
 }
 
 /* Zorg dat het chatvenster meegroeit */
