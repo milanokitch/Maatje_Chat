@@ -504,25 +504,27 @@ body {
         min-height: 100vh;   /* Minimaal zo groot als het scherm */
     }
 
-    /* 2. De Chat krijgt een vaste hoogte (App gevoel) */
+    /* 2. De Chat (VIP: Moet als EERSTE staan) */
     .chat-section {
-        order: 1;            /* Chat bovenaan */
-        height: 75vh;        /* Pak 75% van de schermhoogte */
-        min-height: 400px;   /* Zorg dat hij nooit té klein wordt */
+        order: -1;       /* <--- DIT IS DE TRUC! -1 betekent: ga helemaal naar voren */
+        flex: 1;
+        height: 75vh;
+        min-height: 400px;
         display: flex;
         flex-direction: column;
+        margin-bottom: 20px; /* Klein beetje ruimte onder de chat */
     }
 
     .chat-window {
         flex: 1;
-        max-height: none;    /* Geen limiet binnen de sectie */
+        max-height: none;
     }
 
-    /* 3. De Info Tekst staat eronder */
+    /* 3. De Info Tekst (Mag achteraan sluiten) */
     .info-section {
-        order: 2;
+        order: 2;        /* <--- Deze komt nu netjes onder de chat */
         padding: 1rem;
-        margin-bottom: 30px; /* Ruimte onderaan om te scrollen */
+        margin-bottom: 30px;
     }
 
     /* 4. Header aanpassingen */
