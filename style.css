@@ -30,34 +30,79 @@ body {
     min-height: 100vh;
 }
 
-/* Header */
+/* Header Styling */
 .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: orange; /* Set the background color */
-    padding: 10px 20px; /* Add some padding */
+    display: flex; /* Zet elementen naast elkaar */
+    align-items: center; /* Centreer verticaal */
+    justify-content: space-between; /* Verdeel ruimte: Links, Midden, Rechts */
+    background-color: #FF8C00; /* Abrona Oranje */
+    padding: 10px 20px;
     color: white;
-    text-align: center;
     box-shadow: var(--shadow);
-    position: relative;
+    gap: 15px; /* Ruimte tussen de onderdelen */
+}
+
+/* De container voor de tekst (Titel + Subtitel) */
+.header-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1; /* Dit zorgt dat de tekst alle ruimte in het midden pakt */
 }
 
 .header h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    margin: 0;
     font-weight: 600;
+    line-height: 1.2;
 }
 
 .header p {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     opacity: 0.95;
+    margin: 0;
 }
 
 .logo {
-    width: 50px; /* Adjust width as needed */
-    height: auto; /* Maintain aspect ratio */
-    margin-right: 10px; /* Space between logo and text */
+    height: 50px; /* Vaste hoogte zorgt dat hij niet te groot wordt */
+    width: auto;  /* Breedte past zich automatisch aan */
+    object-fit: contain;
+}
+
+/* Logout button */
+.logout-btn {
+    /* We hebben 'position: absolute' verwijderd! */
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    white-space: nowrap; /* Zorgt dat tekst niet op 2 regels komt */
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobiele aanpassing voor de header */
+@media (max-width: 600px) {
+    .header {
+        flex-direction: column; /* Onder elkaar op mobiel */
+        padding: 15px;
+        gap: 10px;
+    }
+    
+    .logo {
+        height: 40px;
+    }
+
+    .header h1 {
+        font-size: 1.4rem;
+    }
 }
 
 /* Main Container */
