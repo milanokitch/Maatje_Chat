@@ -590,3 +590,53 @@ body {
         position: static !important; /* Reset absolute positie als die er nog in zat */
     }
 }
+
+/* =========================================
+   FULLSCREEN FUNCTIONALITEIT
+   ========================================= */
+
+/* 1. De balk waar de knop in zit */
+.chat-header-controls {
+    display: flex;
+    justify-content: flex-end; /* Knop rechts uitlijnen */
+    padding: 10px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
+/* 2. De styling van de knop zelf */
+.fs-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px 10px;
+    transition: all 0.2s;
+    color: var(--text-dark);
+}
+
+.fs-btn:hover {
+    background: #eee;
+    color: var(--primary-color);
+}
+
+/* 3. DE MAGIE: Hoe ziet de chat eruit in fullscreen mode? */
+.chat-section.fullscreen-mode {
+    position: fixed !important; /* Forceer vaste positie */
+    top: 0;
+    left: 0;
+    width: 100vw;  /* Volle breedte */
+    height: 100vh; /* Volle hoogte */
+    z-index: 9999; /* Zorg dat hij BOVEN de header en alles ligt */
+    margin: 0 !important;
+    border-radius: 0;
+    order: unset !important; /* Negeer de volgorde regels */
+}
+
+/* Zorg dat het chatvenster meegroeit */
+.chat-section.fullscreen-mode .chat-window {
+    flex: 1;
+    height: auto;
+    max-height: none;
+}

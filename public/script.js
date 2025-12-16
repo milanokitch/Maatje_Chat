@@ -267,3 +267,30 @@
 })();
 
 console.log('✅ Maatje AI Chatbot script geladen');
+
+// ============================================
+// FULLSCREEN TOGGLE
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const chatSection = document.querySelector('.chat-section');
+
+    if (fullscreenBtn && chatSection) {
+        fullscreenBtn.addEventListener('click', () => {
+            // 1. Wissel de class (aan/uit)
+            chatSection.classList.toggle('fullscreen-mode');
+
+            // 2. Verander het icoontje
+            const isFullscreen = chatSection.classList.contains('fullscreen-mode');
+            
+            if (isFullscreen) {
+                fullscreenBtn.innerText = '✖'; // Kruisje om te sluiten
+                fullscreenBtn.title = "Sluit volledig scherm";
+            } else {
+                fullscreenBtn.innerText = '⛶'; // Icoontje voor openen
+                fullscreenBtn.title = "Open volledig scherm";
+            }
+        });
+    }
+});
