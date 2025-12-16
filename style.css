@@ -117,7 +117,8 @@ body {
 }
 
 /* Info Section */
-.info-section {
+/* Welcome Section (was Info Section) */
+.welcome-section {
     background: white;
     padding: 2rem;
     border-radius: 12px;
@@ -127,24 +128,24 @@ body {
     justify-content: center;
 }
 
-.info-section h2 {
+.welcome-section h2 {
     color: var(--accent-purple);
     margin-bottom: 1rem;
     font-size: 1.8rem;
 }
 
-.info-section p {
+.welcome-section p {
     color: var(--text-light);
     margin-bottom: 1.5rem;
     font-size: 1rem;
 }
 
-.info-section ul {
+.welcome-section ul {
     list-style: none;
     margin-bottom: 2rem;
 }
 
-.info-section li {
+.welcome-section li {
     padding: 0.75rem 0;
     color: var(--text-dark);
     font-size: 1rem;
@@ -154,23 +155,23 @@ body {
 }
 
 /* Afwisselende kleuren voor list items */
-.info-section li:nth-child(1) {
+.welcome-section li:nth-child(1) {
     border-left-color: var(--accent-purple);
 }
 
-.info-section li:nth-child(2) {
+.welcome-section li:nth-child(2) {
     border-left-color: var(--accent-teal);
 }
 
-.info-section li:nth-child(3) {
+.welcome-section li:nth-child(3) {
     border-left-color: var(--accent-pink);
 }
 
-.info-section li:nth-child(4) {
+.welcome-section li:nth-child(4) {
     border-left-color: var(--accent-blue);
 }
 
-.info-section li:hover {
+.welcome-section li:hover {
     transform: translateX(5px);
 }
 
@@ -502,11 +503,13 @@ body {
         min-height: 100vh;
     }
 
-    /* --- 2. DE CHAT (MOET BOVENAAN) --- */
+    /* --- VOLGORDE BEPALEN --- */
+    
+    /* 1. De Chat (Bovenaan) */
     .chat-section {
-        order: -1 !important;       /* Het laagste nummer komt ALTIJD bovenaan */
+        order: 1 !important;
         flex: 1;
-        height: 75vh;               /* Grote chat */
+        height: 75vh; 
         min-height: 400px;
         display: flex;
         flex-direction: column;
@@ -518,12 +521,22 @@ body {
         max-height: none;
     }
 
-    /* --- 3. DE INFO TEKST (MOET ONDERAAN) --- */
-    .info-section {
-        order: 10 !important;       /* Hoog nummer = Onderaan de pagina */
+    /* 2. Het Welkom blok (Midden) */
+    /* Let op: zorg dat je 'welcome-section' in je HTML hebt toegevoegd! */
+    .welcome-section {
+        order: 2 !important;
+        margin-bottom: 20px;
         padding: 1.5rem;
-        margin-bottom: 40px;        /* Extra ruimte onderaan */
-        background: #fff3e0;
+        background: #FFF3E0; /* Beige achtergrond behouden */
+        border-radius: 12px;
+    }
+
+    /* 3. Het Abrona blok (Helemaal onderaan) */
+    .info-section {
+        order: 3 !important;
+        padding: 1.5rem;
+        margin-bottom: 40px; /* Extra ruimte onderaan de pagina */
+        background: white;
     }
 
     /* --- 4. DE HEADER (RIJ INDELING) --- */
