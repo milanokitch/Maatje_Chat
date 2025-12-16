@@ -504,76 +504,81 @@ body {
     background: var(--primary-color);
 }
 
-/* Responsive Design */
+/* =========================================
+   MOBIELE WEERGAVE ( Telefoons )
+   ========================================= */
 @media (max-width: 768px) {
+
+    /* 1. De Grote Container */
     .container {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        margin: 1rem auto;
+        display: flex;          /* Zet flexbox aan */
+        flex-direction: column; /* Alles onder elkaar in plaats van naast elkaar */
+        padding: 10px;          /* Minder witruimte aan de zijkanten */
+        gap: 1rem;
+        /* Zorg dat de pagina niet onnodig scrolt, maar de chat wel */
+        height: calc(100vh - 80px); 
+        margin: 0;
+        max-width: 100%;
     }
 
-    .header h1 {
-        font-size: 1.5rem;
-    }
-
-    .info-section {
-        order: 2;
-    }
-
+    /* 2. De Chat (Moet de belangrijkste zijn!) */
     .chat-section {
-        order: 1;
+        order: 1;       /* DIT IS BELANGRIJK: Zet de chat op de 1e plaats */
+        flex: 1;        /* Laat de chat alle beschikbare ruimte innemen */
+        height: auto;   /* Hoogte past zich aan */
+        display: flex;
+        flex-direction: column;
     }
 
     .chat-window {
-        max-height: 400px;
+        flex: 1;        /* Zorg dat de berichtenruimte groeit */
+        max-height: none; /* Geen limiet meer, vul het scherm */
     }
 
-    .message-content {
-        max-width: 95%;
-    }
-
-    .chat-input-container {
-        gap: 0.5rem;
-    }
-
-    .send-btn {
-        padding: 0.75rem 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .header h1 {
-        font-size: 1.25rem;
-    }
-
-    .header p {
-        font-size: 0.85rem;
-    }
-
+    /* 3. De Info Tekst (Minder belangrijk op mobiel) */
     .info-section {
-        padding: 1.5rem 1rem;
-    }
-
-    .info-section h2 {
-        font-size: 1.4rem;
-    }
-
-    .chat-window {
-        max-height: 350px;
+        order: 2;       /* Zet de info onder de chat */
         padding: 1rem;
+        margin-bottom: 20px; /* Beetje ruimte onderaan */
+        font-size: 0.9rem;   /* Iets kleinere letters */
+        /* display: none;  <-- WEGGEHAALD: Tekst blijft zichtbaar onder de chat */
     }
 
-    .message-content {
-        font-size: 0.9rem;
+    /* 4. Header aanpassingen */
+    .header {
+        padding: 10px;
+        flex-direction: row; /* Houd logo en tekst naast elkaar */
+        justify-content: space-between;
+    }
+
+    .header h1 {
+        font-size: 1.1rem; /* Kleinere titel */
+    }
+    
+    .header p {
+        display: none; /* Verberg de ondertitel op mobiel voor rust */
+    }
+
+    .logo {
+        height: 35px; /* Kleiner logo */
+    }
+
+    .logout-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    /* 5. Vinger-vriendelijke knoppen (Touch targets) */
+    .chat-input-container {
+        padding: 10px;
     }
 
     .chat-input {
-        padding: 0.65rem 0.75rem;
-        font-size: 0.9rem;
+        font-size: 16px; /* Voorkomt dat iPhone inzoomt tijdens typen */
+        padding: 12px;   /* Makkelijker aan te tikken */
     }
 
     .send-btn {
-        padding: 0.65rem 0.9rem;
-        font-size: 0.85rem;
+        padding: 12px 20px; /* Grotere knop voor je duim */
     }
 }
