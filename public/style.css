@@ -640,3 +640,9 @@ body {
     height: auto;
     max-height: none;
 }
+
+/* Zorgt dat de achtergrond niet kan scrollen als deze class aan staat */
+body.no-scroll {
+    overflow: hidden;
+    height: 100vh; /* Forceer de hoogte zodat hij echt vast staat */
+}
