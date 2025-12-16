@@ -467,24 +467,7 @@ body {
     text-decoration: underline;
 }
 
-/* Logout button */
-.logout-btn {
-    position: absolute;
-    right: 20px;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid white;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
 
-.logout-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
 
 /* Scrollbar Styling */
 .chat-window::-webkit-scrollbar {
@@ -509,76 +492,59 @@ body {
    ========================================= */
 @media (max-width: 768px) {
 
-    /* 1. De Grote Container */
+    /* 1. De Container mag nu scrollen (height: auto) */
     .container {
-        display: flex;          /* Zet flexbox aan */
-        flex-direction: column; /* Alles onder elkaar in plaats van naast elkaar */
-        padding: 10px;          /* Minder witruimte aan de zijkanten */
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
-        /* Zorg dat de pagina niet onnodig scrolt, maar de chat wel */
-        height: calc(100vh - 80px); 
+        padding: 10px;
         margin: 0;
         max-width: 100%;
+        height: auto;        /* BELANGRIJK: Laat de pagina groeien */
+        min-height: 100vh;   /* Minimaal zo groot als het scherm */
     }
 
-    /* 2. De Chat (Moet de belangrijkste zijn!) */
+    /* 2. De Chat krijgt een vaste hoogte (App gevoel) */
     .chat-section {
-        order: 1;       /* DIT IS BELANGRIJK: Zet de chat op de 1e plaats */
-        flex: 1;        /* Laat de chat alle beschikbare ruimte innemen */
-        height: auto;   /* Hoogte past zich aan */
+        order: 1;            /* Chat bovenaan */
+        height: 75vh;        /* Pak 75% van de schermhoogte */
+        min-height: 400px;   /* Zorg dat hij nooit té klein wordt */
         display: flex;
         flex-direction: column;
     }
 
     .chat-window {
-        flex: 1;        /* Zorg dat de berichtenruimte groeit */
-        max-height: none; /* Geen limiet meer, vul het scherm */
+        flex: 1;
+        max-height: none;    /* Geen limiet binnen de sectie */
     }
 
-    /* 3. De Info Tekst (Minder belangrijk op mobiel) */
+    /* 3. De Info Tekst staat eronder */
     .info-section {
-        order: 2;       /* Zet de info onder de chat */
+        order: 2;
         padding: 1rem;
-        margin-bottom: 20px; /* Beetje ruimte onderaan */
-        font-size: 0.9rem;   /* Iets kleinere letters */
-        /* display: none;  <-- WEGGEHAALD: Tekst blijft zichtbaar onder de chat */
+        margin-bottom: 30px; /* Ruimte onderaan om te scrollen */
     }
 
     /* 4. Header aanpassingen */
     .header {
         padding: 10px;
-        flex-direction: row; /* Houd logo en tekst naast elkaar */
         justify-content: space-between;
     }
 
     .header h1 {
-        font-size: 1.1rem; /* Kleinere titel */
+        font-size: 1.2rem;
     }
     
     .header p {
-        display: none; /* Verberg de ondertitel op mobiel voor rust */
+        display: none; /* Ondertitel weg op mobiel */
     }
 
     .logo {
-        height: 35px; /* Kleiner logo */
+        height: 35px;
     }
 
-    .logout-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-
-    /* 5. Vinger-vriendelijke knoppen (Touch targets) */
-    .chat-input-container {
-        padding: 10px;
-    }
-
+    /* Knoppen mobiel vriendelijk maken */
     .chat-input {
-        font-size: 16px; /* Voorkomt dat iPhone inzoomt tijdens typen */
-        padding: 12px;   /* Makkelijker aan te tikken */
-    }
-
-    .send-btn {
-        padding: 12px 20px; /* Grotere knop voor je duim */
+        font-size: 16px; /* Voorkomt inzoomen op iPhone */
     }
 }
