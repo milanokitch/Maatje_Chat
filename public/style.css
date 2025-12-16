@@ -488,30 +488,29 @@ body {
 }
 
 /* =========================================
-   MOBIELE WEERGAVE ( Telefoons )
+   MOBIELE WEERGAVE ( Telefoons ) - DEFINITIEVE FIX
    ========================================= */
 @media (max-width: 768px) {
 
-    /* --- ALGEMENE STRUCTUUR --- */
+    /* --- 1. DE PAGINA INDELING --- */
     .container {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem; /* Iets meer ruimte tussen chat en info */
+        display: flex !important;       /* Forceer flexbox */
+        flex-direction: column !important; /* Alles onder elkaar */
         padding: 10px;
         margin: 0;
         max-width: 100%;
-        height: auto;
         min-height: 100vh;
     }
 
-    /* --- SECTIE 1: DE CHAT (Bovenaan) --- */
+    /* --- 2. DE CHAT (MOET BOVENAAN) --- */
     .chat-section {
-        order: 1;           /* Prioriteit 1: Komt als eerste */
+        order: -1 !important;       /* Het laagste nummer komt ALTIJD bovenaan */
         flex: 1;
-        height: 80vh;       /* Lekker groot: 80% van het scherm */
-        min-height: 450px;
+        height: 75vh;               /* Grote chat */
+        min-height: 400px;
         display: flex;
         flex-direction: column;
+        margin-bottom: 20px;
     }
 
     .chat-window {
@@ -519,55 +518,62 @@ body {
         max-height: none;
     }
 
-    /* --- SECTIE 2: DE INFO (Onderaan) --- */
+    /* --- 3. DE INFO TEKST (MOET ONDERAAN) --- */
     .info-section {
-        order: 2;           /* Prioriteit 2: Komt ONDER de chat */
+        order: 10 !important;       /* Hoog nummer = Onderaan de pagina */
         padding: 1.5rem;
-        margin-bottom: 30px; /* Ruimte om te scrollen */
-        background: #fff3e0; /* Licht oranje achtergrondje om het 'los' te maken van de chat */
+        margin-bottom: 40px;        /* Extra ruimte onderaan */
+        background: #fff3e0;
     }
 
-    /* --- COMPACTE HEADER --- */
+    /* --- 4. DE HEADER (RIJ INDELING) --- */
     .header {
-        padding: 8px 12px; /* Minder padding maakt hem minder hoog */
-        justify-content: space-between; /* Verdeel: Links | Midden | Rechts */
-        align-items: center;
-        gap: 5px; /* Minder ruimte tussen elementen */
+        display: flex !important;
+        flex-direction: row !important; /* Forceer elementen NAAST elkaar */
+        justify-content: space-between !important; /* Links - Midden - Rechts */
+        align-items: center !important;
+        padding: 8px 10px;
+        gap: 5px;
+        text-align: left; /* Reset eventuele centrering van desktop */
     }
 
-    /* Het logo links */
+    /* Positie 1: Logo (Links) */
     .logo {
-        height: 32px; /* Iets kleiner logo */
-        flex: 0 0 auto; /* Zorg dat hij niet krimpt */
+        order: 1;
+        height: 30px; /* Iets kleiner voor mobiel */
+        width: auto;
+        flex-shrink: 0; /* Zorg dat logo niet geplet wordt */
+        margin: 0;
     }
 
-    /* De tekst in het midden */
+    /* Positie 2: Tekst (Midden) */
     .header-text {
-        flex: 1; /* Pak alle ruimte in het midden */
-        align-items: center; /* Centreer de tekst horizontaal */
-        white-space: nowrap; /* Zorg dat de tekst op 1 regel blijft */
-        overflow: hidden; /* Verberg als het toch te lang is */
-        text-overflow: ellipsis; /* Zet er puntjes (...) neer als het te lang is */
+        order: 2;
+        flex-grow: 1; /* Pak alle ruimte in het midden */
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centreer de tekst */
+        justify-content: center;
+        margin: 0 5px;
     }
 
     .header h1 {
-        font-size: 1rem; /* Kleiner lettertype voor de titel */
-        margin: 0;
+        font-size: 0.95rem; /* Iets kleiner zodat het past */
+        text-align: center;
+        white-space: nowrap; /* Voorkom dat tekst op 2 regels komt */
     }
     
     .header p {
-        display: none; /* Ondertitel blijft verborgen */
+        display: none !important; /* Ondertitel echt weg op mobiel */
     }
 
-    /* De knop rechts */
+    /* Positie 3: Knop (Rechts) */
     .logout-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-        flex: 0 0 auto; /* Zorg dat hij niet krimpt */
-    }
-
-    /* --- OVERIGE MOBIELE TWEAKS --- */
-    .chat-input {
-        font-size: 16px; /* Voorkomt inzoomen op iPhone */
+        order: 3;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        flex-shrink: 0; /* Knop mag niet geplet worden */
+        margin: 0;
+        position: static !important; /* Reset absolute positie als die er nog in zat */
     }
 }
