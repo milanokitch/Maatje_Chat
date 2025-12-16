@@ -146,7 +146,18 @@
 
             if (response.ok) {
                 const data = await response.json();
-                botReply = data.reply;
+                botReply = data.reply || data.message;
+
+                // --- NIEUW: HET VEILIGHEIDSFILTER ---
+                if (botReply && botReply.includes('[ALERT]')) {
+                    // 1. Alarm slaan! (Stuur ook wat de gebruiker typte mee: 'message')
+                    sendSilentAlert(message, botReply); // 'message' is de variabele van de input van de gebruiker
+
+                    // 2. Filter de tag weg voor de cliënt
+                    botReply = botReply.replace('[ALERT]', '').trim();
+                }
+                // -------------------------------------
+
                 backendSuccess = true;
                 console.log('✅ Antwoord van backend ontvangen');
             } else {
@@ -293,5 +304,45 @@
             });
         }
     });
+
+    // ============================================
+    // VEILIGHEID: STIL ALARM SYSTEEM
+    // ============================================
+    async function sendSilentAlert(userMessage, aiRawResponse) {
+        console.log("⚠️ Alarm signaal gedetecteerd! Bezig met melden...");
+
+        // Haal de user_id op (uit local storage of sessie)
+        // Pas 'chat_user_id' aan als jij je opslag anders hebt genoemd
+        const userId = localStorage.getItem('chat_user_id') || 'onbekend';
+
+        // Gebruik de globale supabaseClient of localSupabaseClient als die beschikbaar is
+        const client = window.supabaseClient || window.__maatjeSupabaseClient;
+
+        if (!client) {
+            console.error("❌ Geen Supabase client beschikbaar voor alarm!");
+            return;
+        }
+
+        try {
+            const { error } = await client
+                .from('alerts')
+                .insert([
+                    {
+                        user_id: userId,
+                        user_message: userMessage,  // Wat de cliënt typte
+                        ai_response: aiRawResponse, // Het antwoord van de AI (met [ALERT])
+                        status: 'open'              // Status begint altijd als 'open'
+                    }
+                ]);
+
+            if (error) {
+                console.error("❌ Fout bij opslaan alarm:", error);
+            } else {
+                console.log("✅ Alarm succesvol naar de begeleiding gestuurd.");
+            }
+        } catch (err) {
+            console.error("❌ Onverwachte fout in alarmsysteem:", err);
+        }
+    }
 
 })();
