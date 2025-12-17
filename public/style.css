@@ -593,6 +593,35 @@ body {
         margin: 0;
         position: static !important; /* Reset absolute positie als die er nog in zat */
     }
+
+    /* --- 4. HET LOGO ONDERAAN (Mobiel) --- */
+    .footer-logo {
+        order: 100 !important; /* 100 is een heel hoog nummer, dus altijd als laatste! */
+        margin-top: auto;      /* Duw hem zo ver mogelijk naar beneden */
+        margin-bottom: 20px;
+        padding-top: 1rem;
+    }
+    
+    .footer-logo img {
+        height: 50px; /* Iets kleiner op mobiel */
+    }
+}
+
+/* --- FOOTER LOGO (Desktop & Algemeen) --- */
+.footer-logo {
+    grid-column: 1 / -1; /* Span over de hele breedte (links en rechts) */
+    display: flex;
+    justify-content: center; /* Zet het plaatje in het midden */
+    align-items: center;
+    padding-top: 2rem;
+    padding-bottom: 1rem;
+    width: 100%;
+}
+
+.footer-logo img {
+    height: 60px; /* Pas dit aan als je hem groter/kleiner wilt */
+    width: auto;
+    opacity: 0.8; /* Maakt hem iets subtieler (optioneel) */
 }
 
 /* =========================================
