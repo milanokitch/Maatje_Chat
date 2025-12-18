@@ -9,6 +9,10 @@
 
     // We gebruiken een lokale variabele binnen deze functie scope
     let localSupabaseClient = null;
+    
+    // Globale variabelen voor profiel
+    let currentUserProfile = null;
+    let caretakerEmail = null;
 
     // Check of we een globale client kunnen hergebruiken of een nieuwe moeten maken
     if (typeof window !== 'undefined') {
@@ -46,6 +50,35 @@
         } catch (error) {
             console.error('❌ Fout bij ophalen user:', error);
             return 'anonymous_' + Date.now();
+        }
+    }
+
+    // ============================================
+    // PROFILE MANAGEMENT
+    // ============================================
+
+    async function getUserProfile(userId) {
+        if (!localSupabaseClient || userId.startsWith('anonymous_')) return;
+
+        try {
+            const { data, error } = await localSupabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (error) {
+                console.error('❌ Fout bij ophalen profiel:', error);
+                return;
+            }
+
+            if (data) {
+                currentUserProfile = data;
+                caretakerEmail = data.caretaker_email;
+                console.log('👤 Profiel geladen voor:', data.full_name || 'Onbekend');
+            }
+        } catch (err) {
+            console.error('❌ Onverwachte fout bij profiel laden:', err);
         }
     }
 
@@ -142,6 +175,9 @@
         let botReply = null;
         let backendSuccess = false;
         const userId = await getUserId();
+        
+        // Haal naam op uit profiel (indien beschikbaar)
+        const userName = currentUserProfile ? currentUserProfile.full_name : null;
 
         // 1. Probeer Backend
         try {
@@ -149,7 +185,11 @@
             const response = await fetch(`${API_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, userId })
+                body: JSON.stringify({ 
+                    message, 
+                    userId,
+                    userName // NIEUW: Stuur naam mee naar backend
+                })
             });
 
             if (response.ok) {
@@ -280,13 +320,23 @@
             const userId = await getUserId();
             console.log('👤 User ID:', userId);
 
-            // 2. Haal mijn geschiedenis op!
+            // 2. Haal profiel op (NIEUW)
+            await getUserProfile(userId);
+
+            // 3. Haal mijn geschiedenis op!
             await loadChatHistory(userId);
             
             // Welkomstbericht als leeg
             if (chatWindow.children.length === 0) {
-                addMessageToChat('bot', '👋 Hallo! Ik ben Maatje AI. Hoe kan ik je helpen?');
+                let welcomeText = '👋 Hallo! Ik ben Maatje AI. Hoe kan ik je helpen?';
+                if (currentUserProfile && currentUserProfile.full_name) {
+                    welcomeText = `👋 Hallo ${currentUserProfile.full_name}! Ik ben Maatje AI. Hoe kan ik je helpen?`;
+                }
+                addMessageToChat('bot', welcomeText);
             }
+
+            // 3. Laad mijn profiel (indien beschikbaar)
+            await getUserProfile(userId);
         } else {
             console.error('❌ Kon chat elementen niet vinden in de DOM');
         }
@@ -346,6 +396,9 @@
             return;
         }
 
+        // Bepaal ontvanger (begeleider of fallback)
+        const alertRecipient = caretakerEmail || 'begeleiding@abrona.nl';
+
         try {
             const { error } = await client
                 .from('alerts')
@@ -354,14 +407,15 @@
                         user_id: userId,
                         user_message: userMessage,  // Wat de cliënt typte
                         ai_response: aiRawResponse, // Het antwoord van de AI (met [ALERT])
-                        status: 'open'              // Status begint altijd als 'open'
+                        status: 'open',             // Status begint altijd als 'open'
+                        caretaker_email: alertRecipient // NIEUW: Sla op voor wie dit bedoeld is
                     }
                 ]);
 
             if (error) {
                 console.error("❌ Fout bij opslaan alarm:", error);
             } else {
-                console.log("✅ Alarm succesvol naar de begeleiding gestuurd.");
+                console.log(`✅ Alarm succesvol naar de begeleiding (${alertRecipient}) gestuurd.`);
             }
         } catch (err) {
             console.error("❌ Onverwachte fout in alarmsysteem:", err);

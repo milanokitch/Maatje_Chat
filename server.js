@@ -52,7 +52,7 @@ async function getAssistantInfo() {
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, userId } = req.body;
+        const { message, userId, userName } = req.body;
 
         if (!message) {
             return res.status(400).json({ error: 'Bericht is leeg' });
@@ -74,9 +74,17 @@ app.post('/api/chat', async (req, res) => {
         console.log('💬 Bericht verzonden naar Assistant');
 
         // Run de Assistant (respecteert automatisch system instructions!)
-        const run = await openai.beta.threads.runs.create(threadId, {
+        // NIEUW: Voeg dynamische instructies toe als de naam bekend is
+        let runOptions = {
             assistant_id: ASSISTANT_ID
-        });
+        };
+
+        if (userName) {
+            runOptions.additional_instructions = `De gebruiker heet ${userName}. Spreek de gebruiker af en toe aan bij naam.`;
+            console.log(`👤 Personaliseren voor: ${userName}`);
+        }
+
+        const run = await openai.beta.threads.runs.create(threadId, runOptions);
 
         // Wacht tot de run klaar is
         let runStatus = run.status;
