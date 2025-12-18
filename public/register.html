@@ -60,16 +60,27 @@
             e.preventDefault();
             
             const email = document.getElementById('regEmail').value.trim();
+            const caretakerEmail = document.getElementById('caretakerEmail').value.trim();
             const password = document.getElementById('regPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
             const messageDiv = document.getElementById('registerMessage');
             
+            // 1. Validatie: Wachtwoorden checken
+            if (password !== confirmPassword) {
+                alert("Wachtwoorden zijn niet gelijk!");
+                return;
+            }
+
             try {
                 // Registreren via Supabase Auth
                 const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        emailRedirectTo: window.location.origin
+                        emailRedirectTo: window.location.origin,
+                        data: {
+                            caretaker_email: caretakerEmail // Hier slaan we de begeleider op
+                        }
                     }
                 });
                 
@@ -85,20 +96,14 @@
                         setTimeout(() => {
                             window.location.href = 'login.html';
                         }, 2000);
-                    } else if (data.session) {
-                        // Gebruiker is direct ingelogd (email confirmatie uit)
-                        messageDiv.textContent = '✅ Account aangemaakt! Je wordt doorgestuurd naar de chat...';
-                        console.log('✅ Registratie succesvol en direct ingelogd:', data);
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 1500);
                     } else {
-                        // Email confirmatie vereist
+                        // Email confirmatie vereist of direct ingelogd
+                        alert("Account aangemaakt! Check je email (en die van je begeleider) voor verificatie.");
                         messageDiv.textContent = '✅ Account aangemaakt! Check je e-mail voor bevestiging en log daarna in.';
-                        console.log('✅ Registratie succesvol, email confirmatie vereist:', data);
+                        console.log('✅ Registratie succesvol:', data);
                         setTimeout(() => {
                             window.location.href = 'login.html';
-                        }, 4000);
+                        }, 1500);
                     }
                 }
             } catch (err) {
