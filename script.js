@@ -57,19 +57,27 @@
         if (chatWindow) chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    function addMessageToChat(messageText, messageClass, isHTML = false) {
+    function addMessageToChat(sender, text, isHTML = false) {
         if (!chatWindow) return;
 
         const messageElement = document.createElement('div');
-        messageElement.className = `message ${messageClass}`;
+        messageElement.classList.add('message');
+
+        if (sender === 'user') {
+            messageElement.classList.add('user-message');
+        } else if (sender === 'bot') {
+            messageElement.classList.add('bot-message');
+        } else {
+            messageElement.classList.add(sender);
+        }
 
         const contentElement = document.createElement('div');
         contentElement.className = 'message-content';
         
         if (isHTML) {
-            contentElement.innerHTML = messageText;
+            contentElement.innerHTML = text;
         } else {
-            contentElement.textContent = messageText;
+            contentElement.textContent = text;
         }
 
         messageElement.appendChild(contentElement);
@@ -97,11 +105,11 @@
     }
 
     function displayUserMessage(message) {
-        addMessageToChat(message, 'user-message');
+        addMessageToChat('user', message);
     }
 
     function displayBotMessage(message) {
-        addMessageToChat(message, 'bot-message');
+        addMessageToChat('bot', message);
     }
 
     function displayTypingIndicator() {
@@ -146,17 +154,32 @@
 
             if (response.ok) {
                 const data = await response.json();
-                botReply = data.reply || data.message;
+                let rawReply = data.reply || data.message;
 
-                // --- NIEUW: HET VEILIGHEIDSFILTER ---
-                if (botReply && botReply.includes('[ALERT]')) {
-                    // 1. Alarm slaan! (Stuur ook wat de gebruiker typte mee: 'message')
-                    sendSilentAlert(message, botReply); // 'message' is de variabele van de input van de gebruiker
+                // --- NIEUWE CODE: FORCEER DE OPMAAK ---
+                if (rawReply.includes('[ALERT]')) {
+                    
+                    // 1. Stuur melding naar database
+                    sendSilentAlert(message, rawReply);
 
-                    // 2. Filter de tag weg voor de cliënt
-                    botReply = botReply.replace('[ALERT]', '').trim();
+                    // 2. SCHOONMAAK ACTIE:
+                    // - .replace('[ALERT]', '')  -> Haalt de tag weg
+                    // - .replace(/\|\|/g, '\n\n') -> Vervangt ALLE '||' tekens door 2 enters
+                    let cleanReply = rawReply
+                        .replace('[ALERT]', '')
+                        .replace(/\|\|/g, '\n\n') 
+                        .trim();
+                    
+                    // 3. Toon het bericht
+                    addMessageToChat('bot', cleanReply);
+                    
+                    botReply = cleanReply;
+
+                } else {
+                    // Geen alarm, gewoon tonen
+                    botReply = rawReply;
+                    addMessageToChat('bot', botReply);
                 }
-                // -------------------------------------
 
                 backendSuccess = true;
                 console.log('✅ Antwoord van backend ontvangen');
@@ -176,6 +199,7 @@
             ];
             botReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
             console.log('🔄 Fallback antwoord gebruikt');
+            addMessageToChat('bot', botReply);
         }
 
         // 3. Opslaan in Supabase
@@ -193,7 +217,6 @@
         }
 
         removeTypingIndicator();
-        displayBotMessage(botReply);
         if (sendBtn) sendBtn.disabled = false;
         if (messageInput) messageInput.focus();
     }
@@ -262,7 +285,7 @@
             
             // Welkomstbericht als leeg
             if (chatWindow.children.length === 0) {
-                addMessageToChat('👋 Hallo! Ik ben Maatje AI. Hoe kan ik je helpen?', 'bot-message');
+                addMessageToChat('bot', '👋 Hallo! Ik ben Maatje AI. Hoe kan ik je helpen?');
             }
         } else {
             console.error('❌ Kon chat elementen niet vinden in de DOM');

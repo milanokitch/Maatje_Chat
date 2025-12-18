@@ -267,6 +267,7 @@ body {
     word-wrap: break-word;
     font-size: 0.95rem;
     line-height: 1.5;
+    white-space: pre-wrap;
 }
 
 /* User Message */
@@ -291,6 +292,22 @@ body {
     color: var(--text-dark);
     border-left: 3px solid var(--accent-teal);
     border-bottom-left-radius: 4px;
+}
+
+/* --- SYSTEEM MELDING (Veiligheid) --- */
+.message.system-message {
+    align-self: center;        /* In het midden van de chat */
+    background-color: #e3f2fd; /* Zacht blauw (geruststellend) */
+    color: #0d47a1;            /* Donkerblauw tekst */
+    font-size: 0.85rem;
+    padding: 8px 15px;
+    border-radius: 20px;
+    margin: 10px 0;
+    font-style: italic;
+    border: 1px solid #bbdefb;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: none;          /* Geen zware schaduw */
 }
 
 /* Chat Input Container */
