@@ -641,6 +641,24 @@ body {
     opacity: 0.8; /* Maakt hem iets subtieler (optioneel) */
 }
 
+/* --- LEGAL FOOTER (Privacy) --- */
+.legal-footer {
+    font-size: 0.75rem;
+    color: #888;
+    text-align: center;
+    margin-top: 10px;
+    padding-bottom: 10px;
+}
+
+.legal-footer a {
+    color: #888;
+    text-decoration: underline;
+}
+
+.legal-footer a:hover {
+    color: var(--primary-color);
+}
+
 /* =========================================
    FULLSCREEN FUNCTIONALITEIT
    ========================================= */
