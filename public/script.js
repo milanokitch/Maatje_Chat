@@ -76,6 +76,9 @@
                 currentUserProfile = data;
                 caretakerEmail = data.caretaker_email;
                 console.log('👤 Profiel geladen voor:', data.full_name || 'Onbekend');
+                if (caretakerEmail) {
+                    console.log("Begeleider email opgehaald: " + caretakerEmail);
+                }
             }
         } catch (err) {
             console.error('❌ Onverwachte fout bij profiel laden:', err);
@@ -200,7 +203,7 @@
                 if (rawReply.includes('[ALERT]')) {
                     
                     // 1. Stuur melding naar database
-                    sendSilentAlert(message, rawReply);
+                    sendSilentAlert(message, rawReply, userId);
 
                     // 2. SCHOONMAAK ACTIE:
                     // - .replace('[ALERT]', '')  -> Haalt de tag weg
@@ -381,12 +384,8 @@
     // ============================================
     // VEILIGHEID: STIL ALARM SYSTEEM
     // ============================================
-    async function sendSilentAlert(userMessage, aiRawResponse) {
+    async function sendSilentAlert(userMessage, aiRawResponse, userId) {
         console.log("⚠️ Alarm signaal gedetecteerd! Bezig met melden...");
-
-        // Haal de user_id op (uit local storage of sessie)
-        // Pas 'chat_user_id' aan als jij je opslag anders hebt genoemd
-        const userId = localStorage.getItem('chat_user_id') || 'onbekend';
 
         // Gebruik de globale supabaseClient of localSupabaseClient als die beschikbaar is
         const client = window.supabaseClient || window.__maatjeSupabaseClient;
@@ -398,13 +397,17 @@
 
         // Bepaal ontvanger (begeleider of fallback)
         const alertRecipient = caretakerEmail || 'begeleiding@abrona.nl';
+        
+        // DE GEVRAAGDE MELDING:
+        console.log("NOODSIGNAAL! Melding verstuurd naar: " + alertRecipient);
+        // alert("NOODSIGNAAL! Melding verstuurd naar: " + alertRecipient); // Uncomment voor test-popup
 
         try {
             const { error } = await client
                 .from('alerts')
                 .insert([
                     {
-                        user_id: userId,
+                        user_id: userId || 'onbekend',
                         user_message: userMessage,  // Wat de cliënt typte
                         ai_response: aiRawResponse, // Het antwoord van de AI (met [ALERT])
                         status: 'open',             // Status begint altijd als 'open'
@@ -415,7 +418,7 @@
             if (error) {
                 console.error("❌ Fout bij opslaan alarm:", error);
             } else {
-                console.log(`✅ Alarm succesvol naar de begeleiding (${alertRecipient}) gestuurd.`);
+                console.log(`✅ Alarm opgeslagen in database.`);
             }
         } catch (err) {
             console.error("❌ Onverwachte fout in alarmsysteem:", err);
