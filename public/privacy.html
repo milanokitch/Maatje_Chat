@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy & Veiligheid - Maatje AI</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .privacy-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .back-btn:hover {
+            opacity: 0.9;
+        }
+
+        .privacy-content h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .privacy-content h2 {
+            color: var(--text-dark);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .privacy-content p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+            color: var(--text-dark);
+        }
+
+        .privacy-content ul {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+
+        .privacy-content li {
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        /* Mobile optimization */
+        @media (max-width: 600px) {
+            .privacy-container {
+                margin: 20px 15px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="/images/logo_abrona.png" alt="Abrona Logo" class="logo">
+        <div class="header-text">
+            <h1>Maatje AI</h1>
+            <p>Privacy & Veiligheid</p>
+        </div>
+        <div style="width: 50px;"></div> <!-- Spacer for balance -->
+    </header>
+
+    <main class="privacy-container">
+        <a href="index.html" class="back-btn">← Terug naar Chat</a>
+        
+        <div class="privacy-content">
+            <h1>Privacy & Veiligheid bij Maatje</h1>
+            
+            <p class="intro"><strong>Jouw veiligheid en privacy zijn voor ons heel belangrijk. Op deze pagina leggen we uit wat we met jouw gegevens doen.</strong></p>
+
+            <h2>1. Welke gegevens bewaren we?</h2>
+            <ul>
+                <li>Je e-mailadres en naam (om je account te beheren).</li>
+                <li>Het e-mailadres van je begeleider (voor noodgevallen).</li>
+                <li>Je chatgesprekken (deze worden veilig versleuteld opgeslagen).</li>
+            </ul>
+
+            <h2>2. Waarom leest de computer mee?</h2>
+            <p>Maatje is een slimme chatbot die helpt om jou veilig te houden. De computer scant berichten automatisch op noodsignalen (zoals vallen of nare gedachten). Dit is geen mens, maar software.</p>
+
+            <h2>3. Wanneer krijgt mijn begeleider bericht?</h2>
+            <p>Alleen als het systeem denkt dat jij direct hulp nodig hebt (een noodsituatie), sturen we een bericht naar jouw begeleider. Dit doen we op basis van de 'zorgplicht' en 'vitale belangen'. Je krijgt hier zelf ook altijd een melding van in de chat.</p>
+
+            <h2>4. Delen we data met anderen?</h2>
+            <p>Nee. Jouw gesprekken zijn alleen voor jou en de computer. We verkopen niets aan andere bedrijven. Alleen in noodsituaties delen we relevante info met je begeleider.</p>
+        </div>
+    </main>
+
+    <div class="footer-logo">
+       <!-- Reuse footer logic if needed, but styling might be specific -->
+    </div>
+</body>
+</html>
