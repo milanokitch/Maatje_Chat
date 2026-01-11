@@ -198,30 +198,46 @@
             if (response.ok) {
                 const data = await response.json();
                 let rawReply = data.reply || data.message;
+                let cleanReply = rawReply;
+                let isAlert = false;
 
-                // --- NIEUWE CODE: FORCEER DE OPMAAK ---
+                // --- NIEUWE CODE: PRIORITEIT OPSLAAN ---
+                
+                // 1. Detecteer Alert
                 if (rawReply.includes('[ALERT]')) {
-                    
-                    // 1. Stuur melding naar database
-                    sendSilentAlert(message, rawReply, userId);
-
-                    // 2. SCHOONMAAK ACTIE:
-                    // - .replace('[ALERT]', '')  -> Haalt de tag weg
-                    // - .replace(/\|\|/g, '\n\n') -> Vervangt ALLE '||' tekens door 2 enters
-                    let cleanReply = rawReply
+                    isAlert = true;
+                    // Schoon de tekst op voor de gebruiker
+                    cleanReply = rawReply
                         .replace('[ALERT]', '')
                         .replace(/\|\|/g, '\n\n') 
                         .trim();
-                    
-                    // 3. Toon het bericht
-                    addMessageToChat('bot', cleanReply);
-                    
-                    botReply = cleanReply;
+                }
 
-                } else {
-                    // Geen alarm, gewoon tonen
-                    botReply = rawReply;
-                    addMessageToChat('bot', botReply);
+                botReply = cleanReply;
+                
+                // 2. OPSLAAN IN SUPABASE (ALTIJD EERST!)
+                if (localSupabaseClient) {
+                    try {
+                        await localSupabaseClient.from('chat_history').insert([{
+                            user_id: userId,
+                            user_message: message,
+                            bot_reply: cleanReply, // We slaan de schone versie op in chat history
+                            timestamp: new Date().toISOString()
+                        }]);
+                        console.log('✅ Bericht opgeslagen in chat_history');
+                    } catch (dbError) {
+                        console.error('⚠️ Kon bericht niet opslaan in DB:', dbError);
+                    }
+                }
+
+                // 3. Toon het bericht aan de gebruiker
+                addMessageToChat('bot', cleanReply);
+
+                // 4. VERWERK ALARM (PAS NA OPSLAAN EN TONEN)
+                if (isAlert) {
+                     // Stuur melding naar aparte alerts tabel (en popup)
+                     // Geef de RAW reply mee zodat begeleiding de originele [ALERT] ziet
+                     await sendSilentAlert(message, rawReply, userId);
                 }
 
                 backendSuccess = true;
@@ -242,22 +258,24 @@
             ];
             botReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
             console.log('🔄 Fallback antwoord gebruikt');
+            
             addMessageToChat('bot', botReply);
-        }
 
-        // 3. Opslaan in Supabase
-        if (localSupabaseClient) {
-            try {
-                await localSupabaseClient.from('chat_history').insert([{
-                    user_id: userId,
-                    user_message: message,
-                    bot_reply: botReply,
-                    timestamp: new Date().toISOString()
-                }]);
-            } catch (dbError) {
-                console.error('⚠️ Kon niet opslaan in DB:', dbError);
+            // Opslaan fallback bericht
+            if (localSupabaseClient) {
+                try {
+                    await localSupabaseClient.from('chat_history').insert([{
+                        user_id: userId,
+                        user_message: message,
+                        bot_reply: botReply,
+                        timestamp: new Date().toISOString()
+                    }]);
+                } catch (dbError) {
+                    console.error('⚠️ Kon fallback niet opslaan:', dbError);
+                }
             }
         }
+
 
         removeTypingIndicator();
         if (sendBtn) sendBtn.disabled = false;
