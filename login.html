@@ -109,6 +109,33 @@
                 }
             }
         });
+
+        // 3. Wachtwoord herstel luisteraar (recovery link)
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                console.log("🔑 Herstel modus gedetecteerd");
+                
+                const newPassword = prompt("Je bent ingelogd via de herstel-link.\nVul nu je nieuwe wachtwoord in:");
+
+                if (newPassword && newPassword.trim()) {
+                    try {
+                        const { error } = await supabaseClient.auth.updateUser({ 
+                            password: newPassword.trim() 
+                        });
+
+                        if (error) {
+                            alert("Fout bij opslaan: " + error.message);
+                        } else {
+                            alert("Wachtwoord succesvol gewijzigd! Je wordt nu ingelogd.");
+                            window.location.href = '/'; // Door naar de app
+                        }
+                    } catch (err) {
+                        console.error("Update error:", err);
+                        alert("Er ging iets mis.");
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>

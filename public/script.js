@@ -400,6 +400,27 @@
     });
 
     // ============================================
+    // PASSWORD RECOVERY LISTENER (Als gebruiker hier landt)
+    // ============================================
+    if (localSupabaseClient) {
+        localSupabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                console.log("🔑 Herstel modus gedetecteerd (in script.js)");
+                const newPassword = prompt("Je bent ingelogd via de herstel-link.\nVul nu je nieuwe wachtwoord in:");
+
+                if (newPassword && newPassword.trim()) {
+                    const { error } = await localSupabaseClient.auth.updateUser({ password: newPassword.trim() });
+                    if (error) {
+                        alert("Fout: " + error.message);
+                    } else {
+                        alert("Wachtwoord aangepast! Je kunt nu verder.");
+                    }
+                }
+            }
+        });
+    }
+
+    // ============================================
     // VEILIGHEID: STIL ALARM SYSTEEM
     // ============================================
     async function sendSilentAlert(userMessage, aiRawResponse, userId) {
