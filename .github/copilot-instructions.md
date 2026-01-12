@@ -13,15 +13,21 @@
 - **Hosting:** Vercel. Houd rekening met relative paths (`images/logo_abrona.png`) en statische assets onder `public/`.
 
 ### Belangrijkste Richtlijnen
-1. **Authenticatie bewaken:** Niet-ingelogde gebruikers moeten worden doorgestuurd naar `login.html`; ingelogde gebruikers zien de chat en een uitlogknop.
+1. **Authenticatie bewaken:** 
+   - Niet-ingelogde gebruikers -> `login.html`.
+   - Wachtwoord herstel: Detecteer `PASSWORD_RECOVERY` event en toon prompt voor nieuw wachtwoord.
+   - Registratie: Vraag om `firstName` (opslaan als `full_name`) en `caretaker_email`.
 2. **Chat-flow & Veiligheid:** 
    - Gebruik `public/script.js` als bron van waarheid.
-   - **Stil Alarm:** Als de bot `[ALERT]` antwoordt, trigger `sendSilentAlert()` naar Supabase `alerts` tabel en verwijder de tag uit de UI.
+   - **Stil Alarm:** Als de bot `[ALERT]` antwoordt:
+     1. Sla bericht EERST op in `chat_history`.
+     2. Trigger `sendSilentAlert()` (gebruik `caretaker_email` uit profiel).
+     3. Toon bericht aan gebruiker zonder `[ALERT]` tag.
 3. **Mobile First & Layout:**
    - **Volgorde:** Gebruik CSS `order` om de layout op mobiel te forceren: Chat (1), Welkom (2), Info (3), Footer Logo (100).
    - **Hoogte:** Gebruik `dvh` (dynamic viewport height) voor chat-secties om Safari-balken te respecteren.
    - **Fullscreen:** Ondersteun fullscreen modus via `.fullscreen-mode` en `body.no-scroll`.
-4. **Bestanden synchroniseren:** Houd `index.html`, `login.html`, `register.html`, `style.css` en `script.js` identiek in root en `public/`.
+4. **Bestanden synchroniseren:** Houd `index.html`, `login.html`, `register.html`, `privacy.html`, `style.css` en `script.js` identiek in root en `public/`.
 5. **Branding:** Gebruik alleen `images/logo_abrona.png`. Bewaak consistente styling (Abrona kleuren).
 
 ### Werkproces
@@ -38,9 +44,11 @@
 - ❌ Geen breaking changes deployen zonder fallbackmelding.
 
 ### Snelle Checklist voor Releases
-- [ ] Login/registratie werkt en redirect juist.
+- [ ] Login/registratie werkt (ook First Name & Caretaker Email).
+- [ ] Wachtwoord herstel flow (email + prompt) werkt.
 - [ ] Chatberichten worden verzonden en ontvangen.
-- [ ] Stil alarm (`[ALERT]`) wordt correct gefilterd en opgeslagen.
+- [ ] Stil alarm (`[ALERT]`) wordt opgeslagen in History én Alerts.
+- [ ] Privacy pagina (`privacy.html`) bereikbaar vanuit footer.
 - [ ] Mobiele layout toont Chat bovenaan en Footer onderaan.
 - [ ] Fullscreen modus werkt en blokkeert scrollen van body.
 - [ ] `git status` heeft geen ongeplande wijzigingen.
