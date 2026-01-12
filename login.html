@@ -83,6 +83,32 @@
                 console.error('Login error:', err);
             }
         });
+
+        // Wachtwoord vergeten handler
+        document.getElementById('forgotPasswordLink').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            // 1. Vraag om email
+            const email = prompt("Vul je e-mailadres in om je wachtwoord te resetten:");
+            
+            if (email && email.trim() !== "") {
+                try {
+                    // 2. Stuur reset verzoek
+                    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email.trim(), {
+                        redirectTo: window.location.href // Stuurt gebruiker terug naar deze pagina na klikken in mail
+                    });
+
+                    if (error) {
+                        alert("Fout bij aanvragen: " + error.message);
+                    } else {
+                        alert("Check je e-mail voor de herstel-link!");
+                    }
+                } catch (err) {
+                    console.error("Reset error:", err);
+                    alert("Er ging iets mis. Probeer het later opnieuw.");
+                }
+            }
+        });
     </script>
 </body>
 </html>
