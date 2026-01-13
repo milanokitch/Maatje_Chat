@@ -343,38 +343,53 @@
 
             // 2. Haal profiel op (NIEUW)
             await getUserProfile(userId);
+            
+            // Log voor debugging
+            console.log("🔍 Debug - User ID:", userId);
+            console.log("🔍 Debug - Full Profile:", currentUserProfile);
 
             // 3. Haal mijn geschiedenis op!
             await loadChatHistory(userId);
             
-            // Welkomstbericht als leeg
-            // Haal de eerste naam op als die bestaat
-            let firstName = 'Gebruiker';
+            // Welkomstbericht logica
+            // Haal de eerste naam op op een robuuste manier
+            let firstName = 'Maatje'; // Fallback
             if (currentUserProfile && currentUserProfile.full_name) {
-                firstName = currentUserProfile.full_name.split(' ')[0];
-            }
-
-            // Zoek bestaande welkomstmsg (static in HTML) en update die indien mogelijk
-            const staticWelcome = chatWindow.querySelector('.bot-message:first-child .message-content');
-            if (staticWelcome && !chatWindow.querySelector('.user-message')) { 
-                // Alleen updaten als er nog geen chatgeschiedenis is geladen (behalve de eerste statische msg)
-                // Of als we de statische HTML welkomstboodschap willen overschrijven.
-                // Echter, als loadChatHistory runt, blijven berichten staan.
-            }
-
-            if (chatWindow.children.length === 0 || (chatWindow.children.length === 1 && chatWindow.children[0].innerText.includes('Hallo! 👋 Ik ben Maatje AI'))) {
-                // Als er nog geen berichten zijn, of alleen de default static message staat er
-                if (chatWindow.children.length === 1) chatWindow.innerHTML = ''; // Clear default
-                
-                let welcomeText = `Hoi ${firstName}, ik ben Maatje. Hoe gaat het vandaag?`;
-                if (!currentUserProfile || !currentUserProfile.full_name) {
-                     welcomeText = 'Hoi, ik ben Maatje. Hoe gaat het vandaag?';
+                // Splits op spatie en pak het eerste deel
+                const parts = currentUserProfile.full_name.trim().split(' ');
+                if (parts.length > 0 && parts[0] !== '') {
+                    firstName = parts[0];
                 }
-                
-                addMessageToChat('bot', welcomeText);
+            } else {
+                console.log("⚠️ Geen full_name gevonden in profiel");
             }
 
-            // 3. Laad mijn profiel (indien beschikbaar) - stond dubbel, weggehaald
+            // Zoek bestaande welkomstmsg (de gene met opacity: 0 uit de HTML)
+            const firstMessageEl = chatWindow.querySelector('.message');
+            const hasHistory = chatWindow.children.length > 1; // Meer dan 1 bericht betekent geschiedenis
+
+            if (!hasHistory) {
+                // Welkomsttekst updaten
+                const welcomeText = `Hoi ${firstName}, ik ben Maatje. Hoe gaat het vandaag?`;
+                
+                if (firstMessageEl) {
+                    // Update bestaande HTML element
+                    const contentEl = firstMessageEl.querySelector('.message-content');
+                    if (contentEl) contentEl.textContent = welcomeText;
+                    
+                    // Fade-in effect
+                    firstMessageEl.style.opacity = '1';
+                } else {
+                    // Maak nieuw aan als hij er niet meer is
+                    addMessageToChat('bot', welcomeText);
+                }
+            } else {
+                // Als er geschiedenis is, verberg de initiële lege welcome message als die er nog tussen staat
+                // (Vaak wordt die al overschreven of weggedrukt, maar voor de zekerheid:)
+                if (firstMessageEl && firstMessageEl.style.opacity === '0') {
+                    firstMessageEl.remove();
+                }
+            }
         } else {
             console.error('❌ Kon chat elementen niet vinden in de DOM');
         }
