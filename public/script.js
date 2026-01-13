@@ -348,16 +348,33 @@
             await loadChatHistory(userId);
             
             // Welkomstbericht als leeg
-            if (chatWindow.children.length === 0) {
-                let welcomeText = '👋 Hallo! Ik ben Maatje AI. Hoe kan ik je helpen?';
-                if (currentUserProfile && currentUserProfile.full_name) {
-                    welcomeText = `👋 Hallo ${currentUserProfile.full_name}! Ik ben Maatje AI. Hoe kan ik je helpen?`;
+            // Haal de eerste naam op als die bestaat
+            let firstName = 'Gebruiker';
+            if (currentUserProfile && currentUserProfile.full_name) {
+                firstName = currentUserProfile.full_name.split(' ')[0];
+            }
+
+            // Zoek bestaande welkomstmsg (static in HTML) en update die indien mogelijk
+            const staticWelcome = chatWindow.querySelector('.bot-message:first-child .message-content');
+            if (staticWelcome && !chatWindow.querySelector('.user-message')) { 
+                // Alleen updaten als er nog geen chatgeschiedenis is geladen (behalve de eerste statische msg)
+                // Of als we de statische HTML welkomstboodschap willen overschrijven.
+                // Echter, als loadChatHistory runt, blijven berichten staan.
+            }
+
+            if (chatWindow.children.length === 0 || (chatWindow.children.length === 1 && chatWindow.children[0].innerText.includes('Hallo! 👋 Ik ben Maatje AI'))) {
+                // Als er nog geen berichten zijn, of alleen de default static message staat er
+                if (chatWindow.children.length === 1) chatWindow.innerHTML = ''; // Clear default
+                
+                let welcomeText = `Hoi ${firstName}, ik ben Maatje. Hoe gaat het vandaag?`;
+                if (!currentUserProfile || !currentUserProfile.full_name) {
+                     welcomeText = 'Hoi, ik ben Maatje. Hoe gaat het vandaag?';
                 }
+                
                 addMessageToChat('bot', welcomeText);
             }
 
-            // 3. Laad mijn profiel (indien beschikbaar)
-            await getUserProfile(userId);
+            // 3. Laad mijn profiel (indien beschikbaar) - stond dubbel, weggehaald
         } else {
             console.error('❌ Kon chat elementen niet vinden in de DOM');
         }
