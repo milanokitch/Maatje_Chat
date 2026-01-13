@@ -119,17 +119,30 @@
                 return;
             }
 
+            // Haal email op van de ingelogde begeleider
+            const caretakerEmail = session.user.email;
+            console.log("Ingelogde begeleider:", caretakerEmail);
+
             // 2. Data Ophalen
-            // We halen data uit de 'alerts' tabel omdat daar de noodmeldingen in staan.
-            // Dit komt overeen met "messages WHERE is_emergency = TRUE" conceptueel.
+            // We halen data uit de 'alerts' tabel (dit zijn de noodmeldingen).
+            // We filteren op profiles.caretaker_email zodat je alleen je EIGEN cliënten ziet.
+            
             const { data, error } = await supabase
                 .from('alerts')
-                .select('*, profiles:user_id(full_name)') // Join met profiles
+                // !inner zorgt voor een INNER JOIN: alleen alerts waarvan het gekoppelde profiel voldoet aan de filter
+                .select('*, profiles!inner(full_name, caretaker_email)') 
+                .eq('profiles.caretaker_email', caretakerEmail)
                 .order('created_at', { ascending: false });
 
             if (error) {
                 console.error("Error fetching alerts:", error);
-                container.innerHTML = `<p style="color:red">Fout bij laden: ${error.message}</p>`;
+                
+                // Fallback: Als de join mislukt (bijv. geen foreign key), toon foutmelding
+                if (error.code === 'PGRST200') {
+                     container.innerHTML = `<p style="color:orange">Let op: De relatie tussen alerts en profiles lijkt niet goed ingesteld in Supabase.<br>Kan niet filteren op begeleider.</p>`;
+                } else {
+                     container.innerHTML = `<p style="color:red">Fout bij laden: ${error.message}</p>`;
+                }
                 return;
             }
 
@@ -141,7 +154,7 @@
             container.innerHTML = '';
 
             if (!alerts || alerts.length === 0) {
-                container.innerHTML = '<div class="empty-message">Geen noodmeldingen, alles rustig! ✅</div>';
+                container.innerHTML = '<div class="empty-message">Geen noodmeldingen van jouw cliënten gevonden.</div>';
                 return;
             }
 
