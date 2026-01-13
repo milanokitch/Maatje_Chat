@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Begeleider Portaal - Maatje AI</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 15px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .refresh-btn {
+            background-color: var(--accent-teal);
+            color: white;
+        }
+
+        .logout-btn-dash {
+            background-color: var(--text-light);
+            color: white;
+        }
+
+        .alert-card {
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--accent-pink); /* Rood/Roze voor alarm */
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background-color: #FFF5F5;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .alert-client {
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        .alert-message {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .ai-response {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            font-style: italic;
+            color: var(--text-light);
+            background: rgba(0,0,0,0.03);
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="/images/logo_abrona.png" alt="Abrona Logo" class="logo">
+        <div class="header-text">
+            <h1>Begeleider Portaal</h1>
+            <p>Overzicht Noodmeldingen</p>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="dashboard-header">
+            <h2>Noodmeldingen</h2>
+            <div class="header-actions">
+                <button id="refreshBtn" class="action-btn refresh-btn">🔄 Verversen</button>
+                <button id="logoutBtn" class="action-btn logout-btn-dash">Uitloggen</button>
+            </div>
+        </div>
+
+        <div id="alerts-container">
+            <div class="empty-state">Laden...</div>
+        </div>
+    </main>
+
+    <!-- Supabase client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuratie
+        const supabaseUrl = 'https://fhynxjujbwxxdxegomki.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoeW54anVqYnd4eGR4ZWdvbWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjkyMzYsImV4cCI6MjA4MDg0NTIzNn0.tTXCi7ptSw1P6IVouGwTZt5DMbCcTZofqpXO-P0UA3k';
+        
+        const { createClient } = window.supabase;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        const container = document.getElementById('alerts-container');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Check Auth
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'index.html'; // Of login.html
+            } else {
+                fetchAlerts(session.user);
+            }
+        }
+
+        // Fetch Alerts
+        async function fetchAlerts(user) {
+            container.innerHTML = '<div class="empty-state">Gegevens ophalen...</div>';
+            
+            // We halen data uit de 'alerts' tabel, zoals eerder opgezet in script.js
+            // We proberen ook de profielnamen op te halen via een foreign key relatie als die bestaat.
+            // Zo niet, dan tonen we 'Onbekend' of het ID.
+            
+            try {
+                const { data, error } = await supabase
+                    .from('alerts')
+                    .select('*, profiles:user_id(full_name)')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                renderAlerts(data);
+            } catch (err) {
+                console.error('Error fetching alerts:', err);
+                container.innerHTML = `<div class="empty-state" style="color: red;">Fout bij ophalen: ${err.message}.<br>Check of je rechten hebt (RLS policies).</div>`;
+            }
+        }
+
+        function renderAlerts(alerts) {
+            if (!alerts || alerts.length === 0) {
+                container.innerHTML = '<div class="empty-state">Geen noodmeldingen gevonden. Gelukkig! ✅</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            alerts.forEach(alert => {
+                const date = new Date(alert.created_at).toLocaleString('nl-NL');
+                // Check of profiles correct gejoined is. Soms is het data.profiles, soms een array.
+                const clientName = alert.profiles?.full_name || alert.user_id || 'Onbekende Cliënt';
+                
+                const card = document.createElement('div');
+                card.className = 'alert-card';
+                card.innerHTML = `
+                    <div class="alert-header">
+                        <span class="alert-time">📅 ${date}</span>
+                        <span class="alert-client">👤 ${clientName}</span>
+                    </div>
+                    <div class="alert-message">
+                        <strong>Bericht:</strong> "${escapeHtml(alert.user_message)}"
+                    </div>
+                    <div class="ai-response">
+                        <strong>AI Antwoord:</strong> ${escapeHtml(alert.ai_response || '')}
+                    </div>
+                    <div style="margin-top:5px; font-size:0.8rem; color:#999;">
+                        Status: ${alert.status || 'open'} | Gemeld aan: ${alert.caretaker_email || 'Onbekend'}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Helper voor XSS preventie
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Event Listeners
+        refreshBtn.addEventListener('click', checkAuth);
+        
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        });
+
+        // Start
+        checkAuth();
+    </script>
+</body>
+</html>
