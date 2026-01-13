@@ -124,29 +124,24 @@
             console.log("Ingelogde begeleider:", caretakerEmail);
 
             // 2. Data Ophalen
-            // We halen data uit de 'alerts' tabel (dit zijn de noodmeldingen).
-            // We filteren op profiles.caretaker_email zodat je alleen je EIGEN cliënten ziet.
+            // We halen data uit de 'chat_history' tabel.
+            // We filteren op is_emergency = true en de juiste begeleider.
             
-            const { data, error } = await supabase
-                .from('alerts')
-                // !inner zorgt voor een INNER JOIN: alleen alerts waarvan het gekoppelde profiel voldoet aan de filter
-                .select('*, profiles!inner(full_name, caretaker_email)') 
-                .eq('profiles.caretaker_email', caretakerEmail)
+            const { data: alerts, error } = await supabase
+                .from('chat_history')
+                // !inner zorgt voor een INNER JOIN: alleen berichten waarvan de gekoppelde user (via profiles) de juiste begeleider heeft
+                .select('*, profiles!inner(full_name, caretaker_email)')
+                .eq('is_emergency', true)
+                .eq('profiles.caretaker_email', session.user.email)
                 .order('created_at', { ascending: false });
 
             if (error) {
                 console.error("Error fetching alerts:", error);
-                
-                // Fallback: Als de join mislukt (bijv. geen foreign key), toon foutmelding
-                if (error.code === 'PGRST200') {
-                     container.innerHTML = `<p style="color:orange">Let op: De relatie tussen alerts en profiles lijkt niet goed ingesteld in Supabase.<br>Kan niet filteren op begeleider.</p>`;
-                } else {
-                     container.innerHTML = `<p style="color:red">Fout bij laden: ${error.message}</p>`;
-                }
+                container.innerHTML = `<p style="color:red">Fout bij laden: ${error.message}</p>`;
                 return;
             }
 
-            renderAlerts(data);
+            renderAlerts(alerts);
         }
 
         // 3. Render Lijst
@@ -159,10 +154,11 @@
             }
 
             alerts.forEach(alert => {
-                const date = new Date(alert.created_at).toLocaleString('nl-NL');
+                const date = new Date(alert.created_at || alert.timestamp).toLocaleString('nl-NL');
                 // Probeer naam te pakken uit de join, fallback naar opgeslagen naam of ID
                 const name = alert.profiles?.full_name || 'Onbekende gebruiker';
                 const message = alert.user_message || 'Geen tekst';
+                const botReply = alert.bot_reply || alert.ai_response || '';
 
                 // HTML voor één item
                 const alertItem = document.createElement('div');
@@ -170,6 +166,7 @@
                 alertItem.innerHTML = `
                     <div class="alert-meta">${date} - ${escapeHtml(name)}</div>
                     <div class="alert-content">"${escapeHtml(message)}"</div>
+                    ${botReply ? `<div class="ai-response"><strong>Antwoord Maatje:</strong> ${escapeHtml(botReply)}</div>` : ''}
                 `;
                 container.appendChild(alertItem);
             });
