@@ -114,8 +114,13 @@
         async function initDashboard() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
-                // Niet ingelogd? Terug naar home/login
-                window.location.href = 'index.html';
+                // Niet ingelogd? Toon melding en stop
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 20px;">
+                        <p style="color:red; font-weight:bold; font-size:1.2rem;">⛔️ Je bent niet ingelogd.</p>
+                        <a href="index.html" style="display:inline-block; margin-top:10px; padding:10px 20px; background-color: #004D40; color:white; text-decoration:none; border-radius:5px;">Ga naar Login</a>
+                    </div>
+                `;
                 return;
             }
 
