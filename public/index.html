@@ -16,7 +16,7 @@
             <p>Jouw digitale maatje</p>
         </div>
 
-        <button id="logoutBtn" class="logout-btn" style="display: none;">Uitloggen</button>
+        <button id="logoutBtn" class="logout-btn" style="display: none;">Uitloggen</button> -> <!-- Logout button removed -->
     </header>
 
     <!-- Main Container -->
@@ -100,29 +100,6 @@
 
             // Bewaar referentie voor andere scripts zonder library te overschrijven
             window.supabaseClient = supabaseClient;
-
-            // Check of gebruiker is ingelogd
-            async function checkAuth() {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                
-                if (!session) {
-                    // Niet ingelogd, redirect naar login
-                    window.location.href = 'login.html';
-                } else {
-                    // Ingelogd, toon logout knop
-                    document.getElementById('logoutBtn').style.display = 'block';
-                    console.log('✅ Gebruiker ingelogd:', session.user.email);
-                }
-            }
-
-            // Logout functie
-            document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-                await supabaseClient.auth.signOut();
-                window.location.href = 'login.html';
-            });
-
-            // Check auth bij laden pagina
-            checkAuth();
         </script>
         <script src="script.js"></script>
 </body>
